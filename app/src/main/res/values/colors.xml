@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="normal_color">#000000</color>
+    <color name="normal_background_color">#888888</color>
+    <color name="selected_color">#88BCFF</color>
+    <color name="selected_background_color">#1C7FFD</color>
+    <color name="weekend_color">#7F7F7F</color>
+    <color name="working_color">#000000</color>
+    <color name="unEnable_color">#D7D7D7</color>
+    <color name="selected_date_color">#0f1C7FFD</color>
+    <color name="selecting_date_color">#0f1C7FFD</color>
+    <color name="selected_date_overdue_color">#0f888888</color>
+    <color name="current_day_color">#1C7FFD</color>
+    <color name="selecting_line_color">#1C7FFD</color>
+</resources>
