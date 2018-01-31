@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_main.*
@@ -84,51 +85,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun assignView() {
-
         //预先加载三个
-        for (i in 0..2) {
-            val monthView = MonthView(this)
-            monthView.currentYear = currentYear
-            monthView.year = currentYear
-            monthView.currentMonth = currentMonth
-            monthView.month = currentMonth
-            monthView.currentDay = currentDay
-            when (i) {
-                1 -> {
-                    if (monthView.month == 12) {
-                        monthView.year += 1
-                        monthView.month = 1
-                    } else {
-                        monthView.month += 1
-                    }
-                }
-                2 -> {
-                    if (monthView.month == 11) {
-                        monthView.year += 1
-                        monthView.month = 1
-                    } else {
-                        monthView.month += 2
-                    }
-                }
-            }
-            views.add(monthView)
-        }
+        val monthView = MonthView(this)
+
+        views.add(monthView)
         textView.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
         month_route_view_pager.apply {
             adapter = pageAdapter
             lastPosition = 0
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(state: Int) {
-
+                    Log.e("...",state.toString())
                 }
 
                 override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                    switchMonth(lastPosition, position)
-                    lastPosition = position
+                    Log.e("...",position.toString())
                 }
 
                 override fun onPageSelected(position: Int) {
-
+                    switchMonth(lastPosition, position)
+                    lastPosition = position
                 }
             })
 
@@ -162,17 +138,23 @@ class MainActivity : AppCompatActivity() {
         }
         textView.text = monthView2.year.toString() + "年" + monthView2.month.toString() + "月"
         //控制draw的频率
-        if (refreshMinPosition <= position) {
-            monthView2.selectingDayByMonthOrSeason = DayBean(2018, 1, 8, BuyType.MONTH)
-//        monthView2.selectingDateByDay.add(DayBean(2018, 1, 12))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 1, 11))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 1, 14))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 1, 13))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 1, 26))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 1, 28))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 2, 1))
-            monthView2.currentDayBean = DayBean(monthView2.currentYear, monthView2.currentMonth, monthView2.currentDay)
-            monthView2.refreshView()
-        }
+        monthView2.selectingDayByMonthOrSeason.add(DayBean(2018, 1, 8, BuyType.MONTH))
+        monthView2.selectingDayByMonthOrSeason.add(DayBean(2018, 4, 8, BuyType.MONTH))
+//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 12))
+//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 11))
+//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 14))
+//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 13))
+//            monthView2.selectedDateByDay.add(DayBean(2018, 1, 26))
+//            monthView2.selectedDateByDay.add(DayBean(2018, 1, 28))
+//            monthView2.selectedDateByDay.add(DayBean(2018, 2, 1))
+//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 12))
+//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 11))
+//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 14))
+//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 13))
+//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 26))
+//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 28))
+//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 1))
+        monthView2.currentDayBean = DayBean(monthView2.currentYear, monthView2.currentMonth, monthView2.currentDay)
+        monthView2.refreshView()
     }
 }

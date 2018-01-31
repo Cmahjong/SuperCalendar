@@ -51,35 +51,29 @@ object DateUtil {
         }
 
         return when (dateTime) {
-            in (startDateTime + 1)..(endTime!! - 1) -> if (dateTime < currentDate) {
-                //在区间并且过期
-                1
-            } else if (dateTime == currentDate) {
-                //在区间未过期且为当前日期
-                2
-            } else {
-                //在区间未过期且不为当前日期
-                3
+            in (startDateTime + 1)..(endTime!! - 1) -> when {
+                dateTime < currentDate -> //在区间并且过期
+                    1
+                dateTime == currentDate -> //在区间未过期且为当前日期
+                    2
+                else -> //在区间未过期且不为当前日期
+                    3
             }
-            startDateTime -> if (startDateTime < currentDate) {
-                //在起始位置并且过期
-                4
-            } else if (startDateTime == currentDate) {
-                //在起始位置并且未过期且为当前日期
-                5
-            } else {
-                //在起始位置并且未过期且不为当前日期
-                6
+            startDateTime -> when {
+                startDateTime < currentDate -> //在起始位置并且过期
+                    4
+                startDateTime == currentDate -> //在起始位置并且未过期且为当前日期
+                    5
+                else -> //在起始位置并且未过期且不为当前日期
+                    6
             }
-            endTime -> if (endTime < currentDate) {
-                //在结束位置并且过期
-                7
-            } else if (endTime == currentDate) {
-                //在结束位置并且未过期且为当前时间
-                8
-            } else {
-                //在结束位置并且未过期且为不当前时间
-                9
+            endTime -> when {
+                endTime < currentDate -> //在结束位置并且过期
+                    7
+                endTime == currentDate -> //在结束位置并且未过期且为当前时间
+                    8
+                else -> //在结束位置并且未过期且为不当前时间
+                    9
             }
             else -> 10
         }

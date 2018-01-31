@@ -8,7 +8,12 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import io.reactivex.*
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import taotao.haoxiong.com.supercalendar.R
+import java.util.*
 
 
 /**
@@ -127,37 +132,8 @@ class MonthView : View {
     val src: Rect by lazy {
         Rect(0, 0, selectedDateOverdueBitmap!!.width, selectedDateOverdueBitmap!!.height)
     }
-    /**位图将被缩放/转换成合适的矩形  */
-    val dst: Rect by lazy {
-        Rect().apply {
-            set(0, 0, 0, 0)
-        }
-    }
-    /**每个天的矩形位置走边*/
-    val leftDayRect: Rect by lazy {
-        Rect().apply {
-            set(0, 0, 0, 0)
-        }
-    }
-    /**每个天的矩形位置右边2*/
-    val rightDayRect: Rect by lazy {
-        Rect().apply {
-            set(0, 0, 0, 0)
-        }
-    }
 
-    /**每个天的矩形位置中间*/
-    val centerDayRect: Rect by lazy {
-        Rect().apply {
-            set(0, 0, 0, 0)
-        }
-    }
-    /**每个天的园的所在矩形*/
-    val circleDayRect: RectF by lazy {
-        RectF().apply {
-            set(0f, 0f, 0f, 0f)
-        }
-    }
+
     /**  未选中文字大小*/
     var normalDayTextSize: Float = context.resources.getDimension(R.dimen.normalDayTextSize)
     /**未选中文字颜色 */
@@ -204,10 +180,13 @@ class MonthView : View {
     var bitmapMarginCircleCenter: Float = 30f
 
     /**按月买已买的日期*/
-    var selectedDayByMonthOrSeason: DayBean? = null
+    val selectedDayByMonthOrSeason: ArrayList<DayBean> by lazy {
+        ArrayList<DayBean>()
+    }
     /**按月买要买的日期*/
-    var selectingDayByMonthOrSeason: DayBean? = null
-
+    val selectingDayByMonthOrSeason: ArrayList<DayBean> by lazy {
+        ArrayList<DayBean>()
+    }
     /** 当前的日期 */
     var currentDayBean: DayBean? = null
     /** touchEvent down的X位置 */
@@ -217,7 +196,16 @@ class MonthView : View {
     /** monthView的点击事件 */
     var monthViewClick: MonthViewClick? = null
     var useBuyType: BuyType = BuyType.MONTH
+    /** 每一个天的对象 */
 
+    /** 画周的每一个对象 */
+    val drawWeekList: ArrayList<WeekBean> by lazy { ArrayList<WeekBean>() }
+    /** 画天的每一个对象 */
+    val circleBitmapBeanListByDay: ArrayList<CircleBitmapBean> by lazy { ArrayList<CircleBitmapBean>() }
+    val circleBitmapBeanListByMonth: ArrayList<CircleBitmapBean> by lazy { ArrayList<CircleBitmapBean>() }
+    val circleBitmapBeanListBySelectingDay: ArrayList<CircleBitmapBean> by lazy { ArrayList<CircleBitmapBean>() }
+    val circleBitmapBeanListBySelectingMonth: ArrayList<CircleBitmapBean> by lazy { ArrayList<CircleBitmapBean>() }
+    val circleBitmapBeanDay: ArrayList<CircleBitmapBean> by lazy { ArrayList<CircleBitmapBean>() }
     constructor(context: Context) : super(context) {
         initData()
     }
@@ -253,6 +241,11 @@ class MonthView : View {
      * 初始化数据
      */
     private fun initData() {
+        currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        year = currentYear
+        currentMonth = Calendar.getInstance().get(Calendar.MONTH)+1
+        month = currentMonth
+        currentDay =  Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
         buyState = BuyState.OVERDUE
         dayState = DayState.NOT_ENABLE
     }
@@ -260,28 +253,37 @@ class MonthView : View {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         drawMonthTitle(canvas)
-        drawMonthContent(canvas)
-
+        drawDay(canvas)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-        setMeasuredDimension(widthSize, heightSize);
+        setMeasuredDimension(widthSize, heightSize)
     }
 
     /**
      * 画月的title
      */
     private fun drawMonthTitle(canvas: Canvas?) {
-        drawWeek(canvas)
+        if (drawWeekList.isNotEmpty()) {
+            this.drawWeekList.forEach {
+                weekPaint.color = it.weekPaintColor
+                canvas?.drawText(it.content, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / weeks.size * (weeks.indexOf(it.content) + 0.5)) - weekPaint.measureText(it.content) / 2).toFloat(), y + weekTextSize, weekPaint)
+            }
+        }
     }
 
     /**
      * 画里面的日期
      */
-    private fun drawMonthContent(canvas: Canvas?) {
+    private fun createMonthContentData() {
+        circleBitmapBeanListByDay.clear()
+        circleBitmapBeanDay.clear()
+        circleBitmapBeanListBySelectingDay.clear()
+        circleBitmapBeanListByMonth.clear()
+        circleBitmapBeanListBySelectingMonth.clear()
         //当天是星期几
         val firstDayWeek = CalendarUtil.getFirstDayWeek(year, month)
         //上一个月的总天数
@@ -298,13 +300,14 @@ class MonthView : View {
         if (remainder > 0) {
             rowNumber += 1
         }
-        val dayBean = DayBean()
+
         //每次进行onDraw的时候清空里面的数据，防止重叠
         TouchMannger.monthDayBeanRect.clear()
         when (firstDayWeek) {
             1 -> {
                 for (i in 1..rowNumber) {
                     for (k in firstDayWeek..7) {
+                        val dayBean = DayBean()
                         //画日期
                         if ((k + (i - 1) * 7) > daysCurrentMonth) {
                             textContent = ((k + (i - 1) * 7) - daysCurrentMonth).toString()
@@ -318,9 +321,12 @@ class MonthView : View {
                             }
                             dayBean.day = ((k + (i - 1) * 7) - daysCurrentMonth)
                             //设置画笔颜色 当前选择的月的下一个月
-                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, false)
-                            drawBuySituation(dayBean, canvas, k, i)
-                            drawDay(canvas, k, i)
+                            val circleBitmapBean = CircleBitmapBean()
+                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, false, circleBitmapBean)
+                            circleBitmapBean.content = textContent
+                            circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                            circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + i * lineHeight / 2
+                            createDayData(dayBean, k, i, circleBitmapBean)
                             addManagerData(k, i, dayBean)
                         } else {
                             textContent = (k + (i - 1) * 7).toString()
@@ -329,10 +335,12 @@ class MonthView : View {
                             dayBean.month = month
                             dayBean.day = ((k + (i - 1) * 7))
                             //设置画笔颜色 当前选择的月
-                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, true)
-
-                            drawBuySituation(dayBean, canvas, k, i)
-                            drawDay(canvas, k, i)
+                            val circleBitmapBean = CircleBitmapBean()
+                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, true, circleBitmapBean)
+                            circleBitmapBean.content = textContent
+                            circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                            circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + i * lineHeight / 2
+                            createDayData(dayBean, k, i, circleBitmapBean)
                             addManagerData(k, i, dayBean)
                         }
                     }
@@ -342,6 +350,7 @@ class MonthView : View {
             else -> {
                 //画第一行
                 for (k in 1..7) {
+                    val dayBean = DayBean()
                     if (firstDayWeek > k) {
                         textContent = (daysLastMonth + k - (firstDayWeek - 1)).toString()
                         //画圈 月份为1 上一个月就是12月
@@ -354,9 +363,12 @@ class MonthView : View {
                         }
                         dayBean.day = (daysLastMonth + k - (firstDayWeek - 1))
                         //设置画笔颜色 当前选择的月的下一个月
-                        setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, false)
-                        drawBuySituation(dayBean, canvas, k, 1)
-                        drawDay(canvas, k, 1)
+                        val circleBitmapBean = CircleBitmapBean()
+                        setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, false, circleBitmapBean)
+                        circleBitmapBean.content = textContent
+                        circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                        circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + 1 * lineHeight / 2
+                        createDayData(dayBean, k, 1, circleBitmapBean)
                         addManagerData(k, 1, dayBean)
                     } else {
                         textContent = (k - firstDayWeek + 1).toString()
@@ -365,9 +377,12 @@ class MonthView : View {
                         dayBean.month = month
                         dayBean.day = (k - firstDayWeek + 1)
                         //设置画笔颜色 当前选择的月
-                        setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, true)
-                        drawBuySituation(dayBean, canvas, k, 1)
-                        drawDay(canvas, k, 1)
+                        val circleBitmapBean = CircleBitmapBean()
+                        setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, true, circleBitmapBean)
+                        circleBitmapBean.content = textContent
+                        circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                        circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + 1 * lineHeight / 2
+                        createDayData(dayBean, k, 1, circleBitmapBean)
                         addManagerData(k, 1, dayBean)
                     }
 
@@ -375,6 +390,7 @@ class MonthView : View {
                 //画剩下的几行
                 for (i in 2..rowNumber) {
                     for (k in 1..7) {
+                        val dayBean = DayBean()
                         textContent = (((k - firstDayWeek + 1) + (i - 1) * 7) - daysCurrentMonth).toString()
                         //设置画笔颜色 当前选择的月的下一个月
                         if (((k - firstDayWeek + 1) + (i - 1) * 7) > daysCurrentMonth) {
@@ -388,9 +404,12 @@ class MonthView : View {
                             }
                             dayBean.day = (((k - firstDayWeek + 1) + (i - 1) * 7) - daysCurrentMonth)
                             //设置画笔颜色 当前选择的月的下一个月
-                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, false)
-                            drawBuySituation(dayBean, canvas, k, i)
-                            drawDay(canvas, k, i)
+                            val circleBitmapBean = CircleBitmapBean()
+                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, false, circleBitmapBean)
+                            circleBitmapBean.content = textContent
+                            circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                            circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + i * lineHeight / 2
+                            createDayData(dayBean, k, i, circleBitmapBean)
                             addManagerData(k, i, dayBean)
                         } else {
                             textContent = ((k - firstDayWeek + 1) + (i - 1) * 7).toString()
@@ -399,9 +418,12 @@ class MonthView : View {
                             dayBean.month = month
                             dayBean.day = ((k - firstDayWeek + 1) + (i - 1) * 7)
                             //设置画笔颜色 当前选择的月的下一个月
-                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, dayPaint, true)
-                            drawBuySituation(dayBean, canvas, k, i)
-                            drawDay(canvas, k, i)
+                            val circleBitmapBean = CircleBitmapBean()
+                            setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, true, circleBitmapBean)
+                            circleBitmapBean.content = textContent
+                            circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
+                            circleBitmapBean.textY = y - (dayPaint.ascent() + dayPaint.descent()) / 2 + i * lineHeight / 2
+                            createDayData(dayBean, k, i, circleBitmapBean)
                             addManagerData(k, i, dayBean)
                         }
                     }
@@ -421,45 +443,32 @@ class MonthView : View {
     /**
      * 画买的情况
      */
-    private fun drawBuySituation(dayBean: DayBean, canvas: Canvas?, k: Int, i: Int) {
+    private fun createDayData(dayBean: DayBean, k: Int, i: Int, circleBitmapBean: CircleBitmapBean) {
+        circleBitmapBean.dayBean = dayBean
         //按天买
         if (selectedDateByDay.isNotEmpty()) {
-            drawSelectedDateByDay(dayBean, canvas, k, i)
+            createSelectedDateByDayData(dayBean, k, i, circleBitmapBean)
         }
         if (selectingDateByDay.isNotEmpty()) {
-            drawSelectingDateByDay(dayBean, canvas, k, i)
+            createSelectingDateByDayData(dayBean, k, i, circleBitmapBean)
         }
-        drawSelectedDateByMonthOrSeason(dayBean, canvas, k, i)
-    }
+        //画买过的矩形框（按月和按季买）
+        if (selectedDayByMonthOrSeason .isNotEmpty()) {
+            selectedDayByMonthOrSeason.forEach {
+                if (it.type != BuyType.DAY) {
+                    createSelectedDateByMonthData(DateUtil.compareTwoDayBean(dayBean, it, currentDayBean, it.type!!), k, i, circleBitmapBean)
+                }
+            }
 
-    /**
-     * 画买过的矩形框（按月和按季买）
-     */
-    private fun drawSelectedDateByMonthOrSeason(dayBean: DayBean, canvas: Canvas?, k: Int, i: Int) {
-        if (selectedDayByMonthOrSeason != null) {
-            when (selectedDayByMonthOrSeason!!.type) {
-            //按月买
-                BuyType.MONTH -> {
-                    drawSelectedDateByMonth(DateUtil.compareTwoDayBean(dayBean, selectedDayByMonthOrSeason!!, currentDayBean, BuyType.MONTH), canvas, k, i)
-                }
-            //按季买
-                BuyType.SEASON -> {
-                    drawSelectedDateByMonth(DateUtil.compareTwoDayBean(dayBean, selectedDayByMonthOrSeason!!, currentDayBean, BuyType.SEASON), canvas, k, i)
+        }
+        if (selectingDayByMonthOrSeason.isNotEmpty()) {
+            selectingDayByMonthOrSeason.forEach {
+                if (it.type != BuyType.DAY) {
+                    createSelectingDateByMonthData(DateUtil.compareTwoDayBean(dayBean, it, currentDayBean, it.type!!), k, i, circleBitmapBean)
                 }
             }
         }
-        if (selectingDayByMonthOrSeason != null) {
-            when (selectingDayByMonthOrSeason!!.type) {
-            //按月买
-                BuyType.MONTH -> {
-                    drawSelectingDateByMonth(DateUtil.compareTwoDayBean(dayBean, selectingDayByMonthOrSeason!!, currentDayBean, BuyType.MONTH), canvas, k, i)
-                }
-            //按季买
-                BuyType.SEASON -> {
-                    drawSelectingDateByMonth(DateUtil.compareTwoDayBean(dayBean, selectingDayByMonthOrSeason!!, currentDayBean, BuyType.SEASON), canvas, k, i)
-                }
-            }
-        }
+        circleBitmapBeanDay.add(circleBitmapBean)
     }
 
     /**
@@ -468,113 +477,122 @@ class MonthView : View {
      * 4在起始位置并且过期，5在起始位置并且未过期且为当前日期，6在起始位置并且未过期且不为当前日期，
      * 7在结束位置并且过期，8在结束位置并且未过期且为当前时间，9在结束位置并且未过期且为不当前时间
      */
-    private fun drawSelectedDateByMonth(type: Int, canvas: Canvas?, k: Int, i: Int) {
+    private fun createSelectedDateByMonthData(type: Int, k: Int, i: Int, circleBitmapBean: CircleBitmapBean) {
         //根据原型，是先画圆在画图
+        /*位图将被缩放/转换成合适的矩形  */
+        val dst = Rect()
+        /*每个天的矩形位置走边*/
+        val leftDayRect = Rect()
+        /*每个天的矩形位置右边2*/
+        val rightDayRect = Rect()
+        /*每个天的矩形位置中间*/
+        val centerDayRect = Rect()
+        /*每个天的园的所在矩形*/
+        val circleDayRect = RectF()
         dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter - selectedDateOverdueBitmap?.height!!).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap?.width!!).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter).toInt())
         leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + i * lineHeight / 2 - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + i * lineHeight / 2 + selectedDateRadius).toInt().toFloat())
+        circleBitmapBean.dst = dst
+        circleBitmapBean.leftDayRect = leftDayRect
+        circleBitmapBean.rightDayRect = rightDayRect
+        circleBitmapBean.centerDayRect = centerDayRect
+        circleBitmapBean.circleDayRect = circleDayRect
+
+        circleBitmapBean.k = k
         when (type) {
             2 -> {
-                dayPaint.color = currentDayColor
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectedDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = currentDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
                 when (k) {
                     7 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    }
-                    else -> {
-                        drawLeftRect(canvas)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
                     }
                 }
-                drawBitmap(canvas, selectedDateBitmap)
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             3 -> {
-                dayPaint.color = selectedDayColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectedDateColor
-                when (k) {
-                    1 -> {
-                        drawLeftRect(canvas)
-                    }
-                    7 -> {
-                        drawRightRect(canvas)
-                    }
-                    else -> {
-                        drawCenterRect(canvas)
-                    }
-                }
-                drawBitmap(canvas, selectedDateBitmap)
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = selectedDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             5 -> {
-                dayPaint.color = currentDayColor
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectedDateColor
-                drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
+                circleBitmapBean.dayPaintColor = currentDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
                 when (k) {
                     7 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    }
-                    else -> {
-                        drawLeftRect(canvas)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
                     }
                 }
-                drawBitmap(canvas, selectedDateBitmap)
-
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             6 -> {
-                dayPaint.color = selectedDayColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectedDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = selectedDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
                 when (k) {
                     7 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    }
-                    else -> {
-                        drawLeftRect(canvas)
-
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
                     }
                 }
-                drawBitmap(canvas, selectedDateBitmap)
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             8 -> {
-                dayPaint.color = currentDayColor
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectedDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = currentDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
                 when (k) {
                     1 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                        drawBitmap(canvas, selectedDateBitmap)
-                    }
-                    else -> {
-                        drawRightRect(canvas)
-                        drawBitmap(canvas, selectedDateBitmap)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                        circlePaint.color = circleBitmapBean.circlePaintColor!!
                     }
                 }
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             9 -> {
-                dayPaint.color = selectedDayColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectedDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = selectedDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectedDateColor
+                circleBitmapBean.bitmap = selectedDateBitmap
                 when (k) {
                     1 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    }
-                    else -> {
-                        drawRightRect(canvas)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
                     }
                 }
-                drawBitmap(canvas, selectedDateBitmap)
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
             1, 4, 7 -> {
-                dayPaint.color = unEnableColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectedDateOverdueColor
-                drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                drawBitmap(canvas, selectedDateOverdueBitmap)
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = unEnableColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectedDateOverdueColor
+                circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                circleBitmapBean.bitmap = selectedDateOverdueBitmap
+                circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
+
         }
+
     }
 
     /**
@@ -583,180 +601,208 @@ class MonthView : View {
      * 4在起始位置并且过期，5在起始位置并且未过期且为当前日期，6在起始位置并且未过期且不为当前日期，
      * 7在结束位置并且过期，8在结束位置并且未过期且为当前时间，9在结束位置并且未过期且为不当前时间
      */
-    private fun drawSelectingDateByMonth(type: Int, canvas: Canvas?, k: Int, i: Int) {
+    private fun createSelectingDateByMonthData(type: Int, k: Int, i: Int, circleBitmapBean: CircleBitmapBean) {
         //根据原型，是先画圆在画图
+        val dst = Rect()
+        /*每个天的矩形位置走边*/
+        val leftDayRect = Rect()
+        /*每个天的矩形位置右边2*/
+        val rightDayRect = Rect()
+        /*每个天的矩形位置中间*/
+        val centerDayRect = Rect()
+        /*每个天的园的所在矩形*/
+        val circleDayRect = RectF()
         dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter - selectedDateOverdueBitmap?.height!!).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap?.width!!).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter).toInt())
         leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + i * lineHeight / 2 - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + i * lineHeight / 2 + selectedDateRadius).toInt())
         circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + i * lineHeight / 2 - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + i * lineHeight / 2 + selectedDateRadius).toInt().toFloat())
+        circleBitmapBean.leftDayRect = leftDayRect
+        circleBitmapBean.rightDayRect = rightDayRect
+        circleBitmapBean.centerDayRect = centerDayRect
+        circleBitmapBean.circleDayRect = circleDayRect
+
+        circleBitmapBean.k = k
         when (type) {
             2 -> {
-                dayPaint.color = currentDayColor
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectingDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = currentDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectingDateColor
                 when (k) {
                     7 -> {
-                        drawSelectingRightRect(canvas)
-                        drawSelectingRightLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                     1 -> {
-                        drawSelectingLeftRect(canvas)
-                        drawSelectingLeftLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                     else -> {
-                        drawSelectingCenterRect(canvas)
-                        drawSelectingCenterLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                 }
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             1, 3 -> {
-                dayPaint.color = selectedDayColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectingDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = selectedDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectingDateColor
                 when (k) {
                     7 -> {
-                        drawSelectingRightRect(canvas)
-                        drawSelectingRightLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                     1 -> {
-                        drawSelectingLeftRect(canvas)
-                        drawSelectingLeftLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                     else -> {
-                        drawSelectingCenterRect(canvas)
-                        drawSelectingCenterLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
+
                     }
                 }
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             5 -> {
-                dayPaint.color = Color.parseColor("#ffffff")
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectingLineColor
-                drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = Color.parseColor("#ffffff")
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectingLineColor
+                circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             4, 6 -> {
-                dayPaint.color = Color.parseColor("#ffffff")
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectingLineColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = Color.parseColor("#ffffff")
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectingLineColor
                 when (k) {
                     7 -> {
                     }
                     else -> {
-                        drawSelectingLeftRect(canvas)
-                        drawSelectingLeftLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                 }
-                drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
+                circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             8 -> {
-                dayPaint.color = currentDayColor
-                dayPaint.typeface = Typeface.DEFAULT_BOLD
-                circlePaint.color = selectingDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = currentDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                circleBitmapBean.circlePaintColor = selectingDateColor
                 when (k) {
                     1 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
                     }
                     else -> {
-                        drawSelectingRightRect(canvas)
-                        drawSelectingRightLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                 }
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             7, 9 -> {
-                dayPaint.color = selectedDayColor
-                dayPaint.typeface = Typeface.DEFAULT
-                circlePaint.color = selectingDateColor
+                circleBitmapBean.type = type
+                circleBitmapBean.dayPaintColor = selectedDayColor
+                circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                circleBitmapBean.circlePaintColor = selectingDateColor
                 when (k) {
                     1 -> {
-                        drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
+                        circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                        circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                        circlePaint.color = circleBitmapBean.circlePaintColor!!
                     }
                     else -> {
-                        drawSelectingRightRect(canvas)
-                        drawSelectingRightLine(canvas, k, i)
+                        circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
+                        circleBitmapBean.lineCenterY = (y + i * lineHeight / 2)
+                        circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                 }
+                circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
 
         }
+
     }
 
-    /**
-     * 画选择中中间的线
-     */
-    private fun drawSelectingCenterLine(canvas: Canvas?, k: Int, i: Int) {
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat()), (y + i * lineHeight / 2 - selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())), (y + i * lineHeight / 2 - selectedDateRadius), linePaint)
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft + paddingRight) / 7 * (k - 1))).toFloat()), (y + i * lineHeight / 2 + selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())), (y + i * lineHeight / 2 + selectedDateRadius), linePaint)
-    }
-
-    /**
-     * 画选择中左边的线
-     */
-    private fun drawSelectingLeftLine(canvas: Canvas?, k: Int, i: Int) {
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()), (y + i * lineHeight / 2 - selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())), (y + i * lineHeight / 2 - selectedDateRadius), linePaint)
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft + paddingRight) / 7 * (k - 0.5))).toFloat()), (y + i * lineHeight / 2 + selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())), (y + i * lineHeight / 2 + selectedDateRadius), linePaint)
-    }
 
     /**
      * 画选择中右边的线
      */
-    private fun drawSelectingRightLine(canvas: Canvas?, k: Int, i: Int) {
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat()), (y + i * lineHeight / 2 - selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())), (y + i * lineHeight / 2 - selectedDateRadius), linePaint)
-        canvas?.drawLine(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat()), (y + i * lineHeight / 2 + selectedDateRadius), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())), (y + i * lineHeight / 2 + selectedDateRadius), linePaint)
+    private fun drawSelectingLine(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawLine(circleBitmapBean.lineStartX!!, (circleBitmapBean.lineCenterY!! - selectedDateRadius), circleBitmapBean.lineEndX!!, (circleBitmapBean.lineCenterY!! - selectedDateRadius), linePaint)
+        canvas?.drawLine(circleBitmapBean.lineStartX!!, (circleBitmapBean.lineCenterY!! + selectedDateRadius), circleBitmapBean.lineEndX!!, (circleBitmapBean.lineCenterY!! + selectedDateRadius), linePaint)
     }
 
     /**
      * 画中间矩形
      */
-    private fun drawCenterRect(canvas: Canvas?) {
-        canvas?.drawRect(centerDayRect, rectPaint)
+    private fun drawCenterRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawRect(circleBitmapBean.centerDayRect, rectPaint)
     }
 
     /**
      * 画最右边矩形
      */
-    private fun drawRightRect(canvas: Canvas?) {
-        canvas?.drawArc(circleDayRect, 270f, 180f, true, rectPaint)
-        canvas?.drawRect(rightDayRect, rectPaint)
+    private fun drawRightRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 270f, 180f, true, rectPaint)
+        canvas?.drawRect(circleBitmapBean.rightDayRect, rectPaint)
     }
 
     /**
      * 画最左边矩形
      */
-    private fun drawLeftRect(canvas: Canvas?) {
-        canvas?.drawArc(circleDayRect, 90f, 180f, true, rectPaint)
-        canvas?.drawRect(leftDayRect, rectPaint)
+    private fun drawLeftRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 90f, 180f, true, rectPaint)
+        canvas?.drawRect(circleBitmapBean.leftDayRect, rectPaint)
     }
 
     /**
      * 画中间矩形
      */
-    private fun drawSelectingCenterRect(canvas: Canvas?) {
-        canvas?.drawRect(centerDayRect, rectPaint)
+    private fun drawSelectingCenterRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawRect(circleBitmapBean.centerDayRect, rectPaint)
     }
 
     /**
      * 画最右边矩形
      */
-    private fun drawSelectingRightRect(canvas: Canvas?) {
-        canvas?.drawArc(circleDayRect, 270f, 180f, true, rectPaint)
-        canvas?.drawArc(circleDayRect, 270f, 180f, false, arcPaint)
-        canvas?.drawRect(rightDayRect, rectPaint)
+    private fun drawSelectingRightRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 270f, 180f, true, rectPaint)
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 270f, 180f, false, arcPaint)
+        canvas?.drawRect(circleBitmapBean.rightDayRect, rectPaint)
     }
 
     /**
      * 画最左边矩形
      */
-    private fun drawSelectingLeftRect(canvas: Canvas?) {
-        canvas?.drawArc(circleDayRect, 90f, 180f, true, rectPaint)
-        canvas?.drawArc(circleDayRect, 90f, 180f, false, arcPaint)
-        canvas?.drawRect(leftDayRect, rectPaint)
+    private fun drawSelectingLeftRect(canvas: Canvas?, circleBitmapBean: CircleBitmapBean) {
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 90f, 180f, true, rectPaint)
+        canvas?.drawArc(circleBitmapBean.circleDayRect, 90f, 180f, false, arcPaint)
+        canvas?.drawRect(circleBitmapBean.leftDayRect, rectPaint)
     }
 
     /**
      * 按天选择的时候画选中的日期
      */
-    private fun drawSelectedDateByDay(dayBean: DayBean, canvas: Canvas?, k: Int, i: Int) {
+    private fun createSelectedDateByDayData(dayBean: DayBean, k: Int, i: Int, circleBitmapBean: CircleBitmapBean) {
         if (selectedDateByDay.contains(dayBean)) {
             buyState = when {
                 dayBean.year!! > currentYear -> BuyState.NOT_OVERDUE
@@ -772,55 +818,64 @@ class MonthView : View {
                 else -> BuyState.OVERDUE
             }
             //根据原型，是先画圆在画图
+            val dst = Rect()
             dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter - selectedDateOverdueBitmap?.height!!).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap?.width!!).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter).toInt())
+            circleBitmapBean.dst = dst
             when (buyState) {
                 BuyState.NOT_OVERDUE -> {
-                    dayPaint.color = selectedDayColor
-                    dayPaint.typeface = Typeface.DEFAULT
-                    circlePaint.color = selectedDateColor
-                    drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    drawBitmap(canvas, selectedDateBitmap)
+                    circleBitmapBean.dayPaintColor = selectedDayColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                    circleBitmapBean.circlePaintColor = selectedDateColor
+                    circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                    circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                    circleBitmapBean.bitmap = selectedDateBitmap
                 }
                 BuyState.CURRENT -> {
-                    dayPaint.color = currentDayColor
-                    dayPaint.typeface = Typeface.DEFAULT_BOLD
-                    circlePaint.color = selectedDateColor
-                    drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    drawBitmap(canvas, selectedDateBitmap)
+                    circleBitmapBean.dayPaintColor = currentDayColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                    circleBitmapBean.circlePaintColor = selectedDateColor
+                    circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                    circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                    circleBitmapBean.bitmap = selectedDateBitmap
                 }
                 BuyState.OVERDUE -> {
-                    dayPaint.color = unEnableColor
-                    dayPaint.typeface = Typeface.DEFAULT
-                    circlePaint.color = selectedDateOverdueColor
-                    drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-                    drawBitmap(canvas, selectedDateOverdueBitmap)
+                    circleBitmapBean.dayPaintColor = unEnableColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                    circleBitmapBean.circlePaintColor = selectedDateOverdueColor
+                    circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+                    circleBitmapBean.circleY = (y + i * lineHeight / 2)
+                    circleBitmapBean.bitmap = selectedDateOverdueBitmap
                 }
             }
-
         }
+        circleBitmapBeanListByDay.add(circleBitmapBean)
+
     }
 
     /**
      * 按天选择的时候画选中的日期
      */
-    private fun drawSelectingDateByDay(dayBean: DayBean, canvas: Canvas?, k: Int, i: Int) {
+    private fun createSelectingDateByDayData(dayBean: DayBean, k: Int, i: Int, circleBitmapBean: CircleBitmapBean) {
         if (selectingDateByDay.contains(dayBean)) {
             //根据原型，是先画圆在画图
+            val dst = Rect()
             dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter - selectedDateOverdueBitmap?.height!!).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap?.width!!).toInt()), (y + i * lineHeight / 2 - bitmapMarginCircleCenter).toInt())
-            dayPaint.color = Color.parseColor("#ffffff")
-            dayPaint.typeface = Typeface.DEFAULT
-            circlePaint.color = selectingLineColor
-            drawCircle(canvas, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat(), (y + i * lineHeight / 2), selectedDateRadius, circlePaint)
-            drawBitmap(canvas, selectingDateBitmap)
+            circleBitmapBean.dst = dst
+            circleBitmapBean.dayPaintColor = Color.parseColor("#ffffff")
+            circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+            circleBitmapBean.circlePaintColor = selectingLineColor
+            circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
+            circleBitmapBean.circleY = (y + i * lineHeight / 2)
+            circleBitmapBean.bitmap = selectingDateBitmap
         }
+        circleBitmapBeanListBySelectingDay.add(circleBitmapBean)
     }
 
 
     /**
      * 画bitmap
      */
-    private fun drawBitmap(canvas: Canvas?, bitmap: Bitmap?) {
-
+    private fun drawBitmap(canvas: Canvas?, dst: Rect, bitmap: Bitmap?) {
         canvas?.drawBitmap(bitmap, src, dst, null)
     }
 
@@ -828,8 +883,192 @@ class MonthView : View {
     /**
      * 画天
      */
-    private fun drawDay(canvas: Canvas?, k: Int, i: Int) {
-        canvas?.drawText(textContent, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(textContent) / 2).toFloat(), y - (dayPaint.ascent() + dayPaint.descent()) / 2 + i * lineHeight / 2, dayPaint)
+    private fun drawDay(canvas: Canvas?) {
+        //按天买
+        if (selectedDateByDay.isNotEmpty() && circleBitmapBeanListByDay.isNotEmpty()) {
+            circleBitmapBeanListByDay.forEach {
+                if (selectedDateByDay.contains(it.dayBean)) {
+                    circlePaint.color = it.circlePaintColor!!
+
+                    drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
+                    drawBitmap(canvas, it.dst!!, it.bitmap)
+                }
+            }
+
+        }
+        if (selectingDateByDay.isNotEmpty() && circleBitmapBeanListBySelectingDay.isNotEmpty()) {
+            circleBitmapBeanListBySelectingDay.forEach {
+                if (selectingDateByDay.contains(it.dayBean)) {
+                    circlePaint.color = it.circlePaintColor!!
+                    drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
+                    drawBitmap(canvas, it.dst!!, it.bitmap)
+                }
+            }
+        }
+        //画买过的矩形框（按月和按季买）
+        if (selectedDayByMonthOrSeason.isNotEmpty() && circleBitmapBeanListByMonth.isNotEmpty()) {
+            circleBitmapBeanListByMonth.forEach {
+                drawSelectedDateByMonthOrSeason(it, canvas)
+            }
+
+        }
+        if (selectingDayByMonthOrSeason.isNotEmpty()&&circleBitmapBeanListBySelectingMonth.isNotEmpty()) {
+            circleBitmapBeanListBySelectingMonth.forEach {
+                drawSelectingDateByMonthOrSeason(it, canvas)
+            }
+        }
+        circleBitmapBeanDay.forEach {
+            dayPaint.color = it.dayPaintColor!!
+            dayPaint.typeface = it.dayPaintTypeface
+            canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
+        }
+
+
+
+    }
+
+    private fun drawSelectingDateByMonthOrSeason(circleBitmapBean: CircleBitmapBean, canvas: Canvas?) {
+        when (circleBitmapBean.type) {
+            2, 1, 3 -> {
+                when (circleBitmapBean.k) {
+                    7 -> {
+                        drawSelectingRightRect(canvas, circleBitmapBean)
+                    }
+                    1 -> {
+                        drawSelectingLeftRect(canvas, circleBitmapBean)
+                    }
+                    else -> {
+                        drawSelectingCenterRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawSelectingLine(canvas, circleBitmapBean)
+            }
+
+            5 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+            }
+            4, 6 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                drawSelectingLeftRect(canvas, circleBitmapBean)
+                drawSelectingLine(canvas, circleBitmapBean)
+                drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+            }
+            8 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    1 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawSelectingRightRect(canvas, circleBitmapBean)
+                        drawSelectingLine(canvas, circleBitmapBean)
+                    }
+                }
+            }
+            7, 9 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    1 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawSelectingRightRect(canvas, circleBitmapBean)
+                        drawSelectingLine(canvas, circleBitmapBean)
+                    }
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 画选择过的日期（月和季）
+     */
+    private fun drawSelectedDateByMonthOrSeason(circleBitmapBean: CircleBitmapBean, canvas: Canvas?) {
+        when (circleBitmapBean.type) {
+            2 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    7 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawLeftRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            3 -> {
+
+                when (circleBitmapBean.k) {
+                    1 -> {
+                        drawLeftRect(canvas, circleBitmapBean)
+                    }
+                    7 -> {
+                        drawRightRect(canvas, circleBitmapBean)
+                    }
+                    else -> {
+                        drawCenterRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            5 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    7 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawLeftRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            6 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    7 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawLeftRect(canvas, circleBitmapBean)
+
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            8 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    1 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawRightRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            9 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                when (circleBitmapBean.k) {
+                    1 -> {
+                        drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                    }
+                    else -> {
+                        drawRightRect(canvas, circleBitmapBean)
+                    }
+                }
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+            1, 4, 7 -> {
+                circlePaint.color = circleBitmapBean.circlePaintColor!!
+                drawCircle(canvas, circleBitmapBean.circleX!!, circleBitmapBean.circleY!!, selectedDateRadius, circlePaint)
+                drawBitmap(canvas, circleBitmapBean.dst!!, circleBitmapBean.bitmap)
+            }
+        }
     }
 
     /**
@@ -840,19 +1079,18 @@ class MonthView : View {
     }
 
     /**
-     * 画最上面的周的数子
+     * 创建画周的日期
      */
-    private fun drawWeek(canvas: Canvas?) {
+    private fun createDrawWeekData() {
         weeks.forEach {
             when (it) {
                 "日", "六" -> {
-                    weekPaint.color = weekendColor
+                    drawWeekList.add(WeekBean(weekendColor, it))
                 }
                 else -> {
-                    weekPaint.color = workingColor
+                    drawWeekList.add(WeekBean(workingColor, it))
                 }
             }
-            canvas?.drawText(it, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / weeks.size * (weeks.indexOf(it) + 0.5)) - weekPaint.measureText(it) / 2).toFloat(), y + weekTextSize, weekPaint)
         }
     }
 
@@ -864,7 +1102,7 @@ class MonthView : View {
      * @param isEnable 是否非当月的日期
      * @param paint 画笔
      */
-    private fun setMonthDayPaintColor(year: Int, month: Int, day: Int, paint: Paint, isCurrentMonthDay: Boolean) {
+    private fun setMonthDayPaintColor(year: Int, month: Int, day: Int, isCurrentMonthDay: Boolean, circleBitmapBean: CircleBitmapBean) {
         dayState = when {
             year > currentYear -> DayState.ENABLE
             year == currentYear -> when {
@@ -881,27 +1119,37 @@ class MonthView : View {
         if (isCurrentMonthDay) {
             when (dayState) {
                 DayState.ENABLE -> {
-                    paint.typeface = Typeface.DEFAULT
-                    paint.color = normalDayTextColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                    circleBitmapBean.dayPaintColor = normalDayTextColor
                 }
                 DayState.CURRENT -> {
-                    paint.typeface = Typeface.DEFAULT_BOLD
-                    paint.color = currentDayColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
+                    circleBitmapBean.dayPaintColor = currentDayColor
                 }
                 DayState.NOT_ENABLE -> {
-                    paint.typeface = Typeface.DEFAULT
-                    paint.color = unEnableColor
+                    circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+                    circleBitmapBean.dayPaintColor = unEnableColor
                 }
             }
         } else {
-            paint.typeface = Typeface.DEFAULT
-            paint.color = unEnableColor
+            circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
+            circleBitmapBean.dayPaintColor = unEnableColor
         }
     }
 
     fun refreshView() {
-        invalidate()
-        postDelayed({ requestLayout() }, 200)
+        Observable.create(
+                ObservableOnSubscribe<Int> {
+                    createMonthContentData()
+                    it.onNext(1)
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    invalidate()
+                }
+        createDrawWeekData()
+
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -942,6 +1190,28 @@ class MonthView : View {
         return true
     }
 }
+
+data class WeekBean(val weekPaintColor: Int, val content: String)
+data class CircleBitmapBean(var dayPaintColor: Int? = 0,
+                            var dayPaintTypeface: Typeface? = Typeface.DEFAULT,
+                            var circlePaintColor: Int? = 0,
+                            var type: Int? = -1,
+                            var circleX: Float? = 0F,
+                            var circleY: Float? = 0f,
+                            var textX: Float? = 0F,
+                            var textY: Float? = 0f,
+                            var k: Int? = 0,
+                            var lineStartX: Float? = 0f,
+                            var lineCenterY: Float? = 0f,
+                            var lineEndX: Float? = 0f,
+                            var content: String? = null,
+                            var dayBean: DayBean? = null,
+                            var bitmap: Bitmap? = null,
+                            var dst: Rect? = null,
+                            var leftDayRect: Rect? = null,
+                            var rightDayRect: Rect? = null,
+                            var centerDayRect: Rect? = null,
+                            var circleDayRect: RectF? = null)
 
 interface MonthViewClick {
     fun click(dayBean: DayBean, buyType: BuyType)
