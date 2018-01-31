@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_main.*
 import taotao.haoxiong.com.supercalendar.calendar.BuyType
+import taotao.haoxiong.com.supercalendar.calendar.DataManger
 import taotao.haoxiong.com.supercalendar.calendar.DayBean
 import taotao.haoxiong.com.supercalendar.calendar.MonthView
 import java.util.*
@@ -85,21 +85,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun assignView() {
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 1, 14, BuyType.MONTH))
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 3, 14, BuyType.MONTH))
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 5, 14, BuyType.MONTH))
         //预先加载三个
         val monthView = MonthView(this)
-
+        monthView.id = 0
+        monthView.layoutParams = ViewGroup.LayoutParams(month_route_view_pager.width, ViewGroup.LayoutParams.MATCH_PARENT)
+        monthView.refreshView()
         views.add(monthView)
         textView.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
         month_route_view_pager.apply {
             adapter = pageAdapter
             lastPosition = 0
+
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(state: Int) {
-                    Log.e("...",state.toString())
                 }
 
                 override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                    Log.e("...",position.toString())
                 }
 
                 override fun onPageSelected(position: Int) {
@@ -107,7 +111,16 @@ class MainActivity : AppCompatActivity() {
                     lastPosition = position
                 }
             })
+        }
 
+        textView2.setOnClickListener {
+            val monthView = views[lastPosition]
+            DataManger.selectingDayByMonthOrSeason.clear()
+            DataManger.selectingDayByMonthOrSeason.add(DayBean(2018, 7, 14, BuyType.MONTH))
+            monthView.refreshView()
+            for (i in lastPosition until views.size - 1) {
+                views[i].isDraw=true
+            }
         }
     }
 
@@ -138,8 +151,7 @@ class MainActivity : AppCompatActivity() {
         }
         textView.text = monthView2.year.toString() + "年" + monthView2.month.toString() + "月"
         //控制draw的频率
-        monthView2.selectingDayByMonthOrSeason.add(DayBean(2018, 1, 8, BuyType.MONTH))
-        monthView2.selectingDayByMonthOrSeason.add(DayBean(2018, 4, 8, BuyType.MONTH))
+
 //            monthView2.selectingDateByDay.add(DayBean(2018, 1, 12))
 //            monthView2.selectingDateByDay.add(DayBean(2018, 1, 11))
 //            monthView2.selectingDateByDay.add(DayBean(2018, 1, 14))
@@ -154,7 +166,9 @@ class MainActivity : AppCompatActivity() {
 //        monthView2.selectedDateByDay.add(DayBean(2018, 6, 26))
 //        monthView2.selectedDateByDay.add(DayBean(2018, 6, 28))
 //        monthView2.selectedDateByDay.add(DayBean(2018, 6, 1))
-        monthView2.currentDayBean = DayBean(monthView2.currentYear, monthView2.currentMonth, monthView2.currentDay)
-        monthView2.refreshView()
+        if (position > lastPosition && monthView2.isDraw) {
+            monthView2.refreshView()
+            monthView2.isDraw = false
+        }
     }
 }

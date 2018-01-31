@@ -6,10 +6,10 @@ package taotao.haoxiong.com.supercalendar.calendar
  * @author yinYin
  */
 object DataManger {
-    val selectedAllDayByMonthOrSeason: ArrayList<DayBean> by lazy {
+    val selectedDayByMonthOrSeason: ArrayList<DayBean> by lazy {
         ArrayList<DayBean>()
     }
-    val selectingAllDayByMonthOrSeason: ArrayList<DayBean> by lazy {
+    val selectingDayByMonthOrSeason: ArrayList<DayBean> by lazy {
         ArrayList<DayBean>()
     }
 }
