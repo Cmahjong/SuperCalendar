@@ -7,7 +7,7 @@ import android.graphics.Rect
  * time: 2018/1/30 0030
  * @author yinYin
  */
-object TouchMannger {
+object TouchManager {
     val monthAllDayBean: ArrayList<DayBean> by lazy {
         ArrayList<DayBean>()
     }

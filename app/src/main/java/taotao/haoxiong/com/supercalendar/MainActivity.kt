@@ -6,11 +6,9 @@ import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
-import taotao.haoxiong.com.supercalendar.calendar.BuyType
-import taotao.haoxiong.com.supercalendar.calendar.DataManger
-import taotao.haoxiong.com.supercalendar.calendar.DayBean
-import taotao.haoxiong.com.supercalendar.calendar.MonthView
+import taotao.haoxiong.com.supercalendar.calendar.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -18,7 +16,28 @@ class MainActivity : AppCompatActivity() {
     private var lastPosition = -1
     /** 月份的view  */
     private val views: ArrayList<MonthView> by lazy {
-        ArrayList<MonthView>()
+        ArrayList<MonthView>().apply {
+            add(monthView)
+        }
+    }
+    //预先加载三个
+    val monthView: MonthView by lazy {
+        MonthView(this).apply {
+            id = 0
+            layoutParams = ViewGroup.LayoutParams(month_route_view_pager.width, ViewGroup.LayoutParams.MATCH_PARENT)
+            monthViewClick = object : MonthViewClick {
+                override fun click(dayBean: DayBean, buyType: BuyType, position: Int) {
+                    Toast.makeText(this@MainActivity, dayBean.month.toString() + "月" + dayBean.day + "号", Toast.LENGTH_SHORT).show()
+
+
+                }
+
+                override fun unClick(dayBean: DayBean, buyType: BuyType, message: String) {
+                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                }
+            }
+            refreshView()
+        }
     }
     val currentYear by lazy {
         Calendar.getInstance().get(Calendar.YEAR)
@@ -65,6 +84,16 @@ class MainActivity : AppCompatActivity() {
                     }
                     view.id = position
                     view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                    view.monthViewClick = object : MonthViewClick {
+                        override fun click(dayBean: DayBean, buyType: BuyType, position: Int) {
+                            Toast.makeText(this@MainActivity, dayBean.month.toString() + "月" + dayBean.day + "号", Toast.LENGTH_SHORT).show()
+
+                        }
+
+                        override fun unClick(dayBean: DayBean, buyType: BuyType, message: String) {
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                     views.add(view)
                     refreshMinPosition = position
                 }
@@ -85,15 +114,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun assignView() {
+//        DataManger.selectingDateByDay.add(DayBean(2018, 1, 11))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 1, 14))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 1, 13))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 1, 26))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 1, 28))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 2, 1))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 4, 12))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 4, 11))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 4, 14))
+//        DataManger.selectingDateByDay.add(DayBean(2018, 4, 13))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 6, 26))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 6, 28))
+//        DataManger.selectedDateByDay.add(DayBean(2018, 6, 1))
         DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 1, 14, BuyType.MONTH))
         DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 3, 14, BuyType.MONTH))
         DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 5, 14, BuyType.MONTH))
-        //预先加载三个
-        val monthView = MonthView(this)
-        monthView.id = 0
-        monthView.layoutParams = ViewGroup.LayoutParams(month_route_view_pager.width, ViewGroup.LayoutParams.MATCH_PARENT)
-        monthView.refreshView()
-        views.add(monthView)
+
         textView.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
         month_route_view_pager.apply {
             adapter = pageAdapter
@@ -113,13 +150,35 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
-        textView2.setOnClickListener {
-            val monthView = views[lastPosition]
-            DataManger.selectingDayByMonthOrSeason.clear()
-            DataManger.selectingDayByMonthOrSeason.add(DayBean(2018, 7, 14, BuyType.MONTH))
-            monthView.refreshView()
-            for (i in lastPosition until views.size - 1) {
-                views[i].isDraw=true
+        year.setOnClickListener {
+            if (DataManger.useBuyType != BuyType.SEASON) {
+                DataManger.useBuyType = BuyType.SEASON
+                if (!DataManger.selectingDateByDay.isEmpty() || !DataManger.selectingDayByMonthOrSeason.isEmpty()) {
+                    DataManger.selectingDateByDay.clear()
+                    DataManger.selectingDayByMonthOrSeason.clear()
+                    views[lastPosition].refreshView()
+                }
+            }
+        }
+        month.setOnClickListener {
+            if (DataManger.useBuyType != BuyType.MONTH) {
+                DataManger.useBuyType = BuyType.MONTH
+                if (!DataManger.selectingDateByDay.isEmpty() || !DataManger.selectingDayByMonthOrSeason.isEmpty()) {
+                    DataManger.selectingDateByDay.clear()
+                    DataManger.selectingDayByMonthOrSeason.clear()
+                    views[lastPosition].refreshView()
+                }
+            }
+        }
+        day.setOnClickListener {
+            if (DataManger.useBuyType != BuyType.DAY) {
+                DataManger.useBuyType = BuyType.DAY
+                if (!DataManger.selectingDateByDay.isEmpty() || !DataManger.selectingDayByMonthOrSeason.isEmpty()) {
+                    DataManger.selectingDateByDay.clear()
+                    DataManger.selectingDayByMonthOrSeason.clear()
+                    views[lastPosition].refreshView()
+                }
+
             }
         }
     }
@@ -153,22 +212,12 @@ class MainActivity : AppCompatActivity() {
         //控制draw的频率
 
 //            monthView2.selectingDateByDay.add(DayBean(2018, 1, 12))
-//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 11))
-//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 14))
-//            monthView2.selectingDateByDay.add(DayBean(2018, 1, 13))
-//            monthView2.selectedDateByDay.add(DayBean(2018, 1, 26))
-//            monthView2.selectedDateByDay.add(DayBean(2018, 1, 28))
-//            monthView2.selectedDateByDay.add(DayBean(2018, 2, 1))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 12))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 11))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 14))
-//        monthView2.selectingDateByDay.add(DayBean(2018, 4, 13))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 26))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 28))
-//        monthView2.selectedDateByDay.add(DayBean(2018, 6, 1))
-        if (position > lastPosition && monthView2.isDraw) {
-            monthView2.refreshView()
-            monthView2.isDraw = false
-        }
+        monthView2.refreshView()
+//        if (position > lastPosition && monthView2.isDraw) {
+//            monthView2.refreshView()
+//            monthView2.isDraw = false
+//        }
     }
+
+
 }

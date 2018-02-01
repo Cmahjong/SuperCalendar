@@ -4,5 +4,7 @@
 <dimen name="selectedDayTextSize">16sp</dimen>
 <dimen name="weekTextSize">13sp</dimen>
 <dimen name="selectedDateRadius">15sp</dimen>
+<dimen name="lineHeight">80dp</dimen>
+<dimen name="titleHeight">20dp</dimen>
 
 </resources>

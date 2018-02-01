@@ -34,5 +34,9 @@
         <attr name="selectingLineColor" format="dimension"/>
         <!--选择中背景颜色-->
         <attr name="selectingDateColor" format="color"/>
+        <!--每一行的高度-->
+        <attr name="lineHeight" format="dimension"/>
+        <!--标题的高度-->
+        <attr name="titleHeight" format="dimension"/>
     </declare-styleable>
 </resources>

@@ -80,24 +80,89 @@ object DateUtil {
     }
 
     /**
-     *日期是否在该区间
-     * @return 1:在区间并且过期 ；2在区间未过期且为当前日期；3在区间未过期且不为当前日期；
-     * 4在起始位置并且过期，5在起始位置并且未过期且为当前日期，6在起始位置并且未过期且不为当前日期，
-     * 7在结束位置并且过期，8在结束位置并且未过期且为当前时间，9在结束位置并且未过期且为不当前时间
+     *是否可以选择
      */
-    fun compareTwoDayBean(dayBean: DayBean, startDayBean: DayBean, buyType: BuyType): Boolean {
+    fun isSelect(dayBean: DayBean): Boolean {
         val dateTime = dayBean2Date(dayBean)!!.time
-        val startDateTime = dayBean2Date(startDayBean)!!.time
-        var endTime: Long? = 100L
-        when (buyType) {
-            BuyType.MONTH -> {
-                endTime = startDateTime + 29 * 24 * 60 * 60 * 1000L
+        DataManger.selectedDayByMonthOrSeason.forEach {
+            val startDateTime = dayBean2Date(it)!!.time
+            var endTime: Long? = 100L
+            when (it.type) {
+                BuyType.MONTH -> {
+                    endTime = startDateTime + 29 * 24 * 60 * 60 * 1000L
+                }
+                BuyType.SEASON -> {
+                    endTime = startDateTime + 89 * 24 * 60 * 60 * 1000L
+                }
             }
-            BuyType.SEASON -> {
-                endTime = startDateTime + 89 * 24 * 60 * 60 * 1000L
+            if (dateTime >= startDateTime && dateTime <= endTime!!) {
+                return false
             }
         }
-        return dateTime < startDateTime || dateTime > endTime!!
+        return true
+    }
+
+    /**
+     *是否可以选择
+     */
+    fun isSelect2ByMonth(dayBean: DayBean): Boolean {
+        val dateTime = dayBean2Date(dayBean)!!.time
+        var dateEndTime = dayBean2Date(dayBean)!!.time
+        when (DataManger.useBuyType) {
+            BuyType.MONTH -> {
+                dateEndTime = dateTime + 29 * 24 * 60 * 60 * 1000L
+            }
+            BuyType.SEASON -> {
+                dateEndTime = dateTime + 89 * 24 * 60 * 60 * 1000L
+            }
+        }
+        DataManger.selectedDayByMonthOrSeason.forEach {
+            val startDateTime = dayBean2Date(it)!!.time
+            var endTime: Long? = 100L
+            when (it.type) {
+                BuyType.MONTH -> {
+                    endTime = startDateTime + 29 * 24 * 60 * 60 * 1000L
+                }
+                BuyType.SEASON -> {
+                    endTime = startDateTime + 89 * 24 * 60 * 60 * 1000L
+                }
+            }
+            if (dateTime >= startDateTime && dateTime <= endTime!!) {
+                return false
+            }
+            if (dateEndTime >= startDateTime && dateEndTime <= endTime!!) {
+                return false
+            }
+            if (dateTime < startDateTime && dateEndTime > endTime!!) {
+                return false
+            }
+
+        }
+        return true
+    }
+
+    /**
+     *是否可以选择
+     * @param dayBean 按月买起始日期
+     */
+    fun isSelectByMonth(dayBean: DayBean): Boolean {
+        val startDateTime = dayBean2Date(dayBean)!!.time
+        DataManger.selectedDateByDay.forEach {
+            val dateTime = dayBean2Date(it)!!.time
+            var endTime: Long? = 100L
+            when (DataManger.useBuyType) {
+                BuyType.MONTH -> {
+                    endTime = startDateTime + 29 * 24 * 60 * 60 * 1000L
+                }
+                BuyType.SEASON -> {
+                    endTime = startDateTime + 89 * 24 * 60 * 60 * 1000L
+                }
+            }
+            if (dateTime >= startDateTime && dateTime <= endTime!!) {
+                return false
+            }
+        }
+        return true
     }
 
     fun dayBean2Date(dayBean: DayBean) = str2Date(dayBean.year.toString() + "-" + dayBean.month.toString() + "-" + dayBean.day.toString())
