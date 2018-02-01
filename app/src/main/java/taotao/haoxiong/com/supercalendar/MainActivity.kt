@@ -181,6 +181,13 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+        down.setOnClickListener {
+            DataManger.selectedDateByDay.addAll(DataManger.selectingDateByDay)
+            DataManger.selectedDayByMonthOrSeason.addAll(DataManger.selectingDayByMonthOrSeason)
+            DataManger.selectingDateByDay.clear()
+            DataManger.selectingDayByMonthOrSeason.clear()
+            views[lastPosition].refreshView()
+        }
     }
 
     private fun switchMonth(lastPosition: Int, position: Int) {

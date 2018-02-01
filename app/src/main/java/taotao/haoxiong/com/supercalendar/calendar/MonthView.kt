@@ -1203,7 +1203,7 @@ class MonthView : View {
                                 BuyType.MONTH, BuyType.SEASON -> {
                                     //按月选正在选的日期里面有这个日期
                                     if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
-                                        if (DateUtil.isSelectByMonth(dayBean)) {
+                                        if (!DateUtil.isSelectByMonth(dayBean)) {
                                             isClick = false
                                         }
                                     }

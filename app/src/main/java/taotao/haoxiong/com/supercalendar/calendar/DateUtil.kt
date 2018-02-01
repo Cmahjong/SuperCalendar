@@ -165,5 +165,5 @@ object DateUtil {
         return true
     }
 
-    fun dayBean2Date(dayBean: DayBean) = str2Date(dayBean.year.toString() + "-" + dayBean.month.toString() + "-" + dayBean.day.toString())
+    private fun dayBean2Date(dayBean: DayBean) = str2Date(dayBean.year.toString() + "-" + dayBean.month.toString() + "-" + dayBean.day.toString())
 }
