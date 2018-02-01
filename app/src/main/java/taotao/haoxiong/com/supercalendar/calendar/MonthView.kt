@@ -1134,6 +1134,10 @@ class MonthView : View {
         }
     }
 
+    /**
+     * 刷新日历控件
+     * 以异步操作进行处理，防止卡顿，以空间换时间
+     */
     fun refreshView() {
         Observable.create(
                 ObservableOnSubscribe<Int> {
@@ -1162,13 +1166,17 @@ class MonthView : View {
                 return true
             }
             MotionEvent.ACTION_UP -> {
+                //判断是否可以点击，方便进行回调
                 var isClick = true
+                //判断用户是点击还是滑动
                 if (Math.abs(event.x - startX) <= ViewConfiguration.get(context).scaledTouchSlop &&
                         Math.abs(event.y - startY) <= ViewConfiguration.get(context).scaledTouchSlop) {
+                    //便利循环找到点击区域对应的日期
                     TouchManager.monthDayBeanRect.forEach {
                         if (it.contains(event.x.toInt(), event.y.toInt())) {
                             val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
                             dayBean.type=DataManger.useBuyType
+                            //判断日期是否在可点击的范围内
                             val dayBeanState = when {
                                 dayBean.year!! > currentYear -> DayState.ENABLE
                                 dayBean.year!! == currentYear -> when {
@@ -1182,18 +1190,20 @@ class MonthView : View {
                                 }
                                 else -> DayState.NOT_ENABLE
                             }
+                            //日期不可点击
                             if (dayBeanState != DayState.ENABLE) {
                                 isClick = false
                             }
+                            //根据不同的type做相应的逻辑
                             when (DataManger.useBuyType) {
                                 BuyType.DAY -> {
-                                    //按天选选中的日期里面有这个日期
+                                    //按天选选中的日期（天）里面有这个日期
                                     if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
                                         if (DataManger.selectedDateByDay.contains(dayBean)) {
                                             isClick = false
                                         }
                                     }
-                                    //按天选正在选的日期里面有这个日期
+                                    //按天选正在选的日期（月或者季）里面有这个日期
                                     if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
                                         if (!DateUtil.isSelect(dayBean)) {
                                             isClick = false
@@ -1201,13 +1211,13 @@ class MonthView : View {
                                     }
                                 }
                                 BuyType.MONTH, BuyType.SEASON -> {
-                                    //按月选正在选的日期里面有这个日期
+                                    //按月或者季选正在选的日期（天）里面是否包含已选过的日期
                                     if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
                                         if (!DateUtil.isSelectByMonth(dayBean)) {
                                             isClick = false
                                         }
                                     }
-                                    //按月选正在选的日期里面有这个日期
+                                    //按月或者季选正在选的日期（月或者季）里面是否包含已选过的日期
                                     if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
                                         if (!DateUtil.isSelect2ByMonth(dayBean)) {
                                             isClick = false
@@ -1215,9 +1225,11 @@ class MonthView : View {
                                     }
                                 }
                             }
+                            //是否可以点击并进行回调
                             if (isClick) {
                                 when (DataManger.useBuyType) {
                                     BuyType.DAY->{
+                                        //先判断是否选中，没有选中就添加进去，选中了就去掉
                                         if (DataManger.selectingDateByDay.contains(dayBean)) {
                                             DataManger.selectingDateByDay.remove(dayBean)
                                         } else {
@@ -1225,6 +1237,7 @@ class MonthView : View {
                                         }
                                     }
                                     BuyType.MONTH, BuyType.SEASON ->{
+                                        //直接清空里面数据，原因是只能选中一次，然后提交，然后才能再选
                                         DataManger.selectingDayByMonthOrSeason.clear()
                                         DataManger.selectingDayByMonthOrSeason.add(dayBean)
                                     }

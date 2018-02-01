@@ -8,9 +8,11 @@ import android.graphics.Rect
  * @author yinYin
  */
 object TouchManager {
+    /** 当前月所有的DayBean */
     val monthAllDayBean: ArrayList<DayBean> by lazy {
         ArrayList<DayBean>()
     }
+    /** 当前月所有的Rect */
     val monthDayBeanRect: ArrayList<Rect> by lazy {
         ArrayList<Rect>()
     }
