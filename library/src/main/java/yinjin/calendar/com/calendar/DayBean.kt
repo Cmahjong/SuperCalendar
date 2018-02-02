@@ -1,4 +1,4 @@
-package taotao.haoxiong.com.supercalendar.calendar
+package yinjin.calendar.com.calendar
 
 /**
  * desc:存储时间的
@@ -8,7 +8,7 @@ package taotao.haoxiong.com.supercalendar.calendar
 class DayBean(var year: Int? = 0,
               var month: Int? = 0,
               var day: Int? = 0,
-              var type: BuyType?=BuyType.DAY) {
+              var type: BuyType?= BuyType.DAY) {
     override fun equals(other: Any?): Boolean {
         val bean = other as DayBean
         return bean.year == year && bean.month == month && bean.day == day

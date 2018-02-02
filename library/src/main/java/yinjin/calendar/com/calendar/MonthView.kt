@@ -1,4 +1,4 @@
-package taotao.haoxiong.com.supercalendar.calendar
+package yinjin.calendar.com.calendar
 
 import android.content.Context
 import android.graphics.*
@@ -12,7 +12,7 @@ import io.reactivex.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import taotao.haoxiong.com.supercalendar.R
+import yinjin.calendar.com.R
 import java.util.*
 
 
@@ -1175,7 +1175,7 @@ class MonthView : View {
                     TouchManager.monthDayBeanRect.forEach {
                         if (it.contains(event.x.toInt(), event.y.toInt())) {
                             val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
-                            dayBean.type=DataManger.useBuyType
+                            dayBean.type= DataManger.useBuyType
                             //判断日期是否在可点击的范围内
                             val dayBeanState = when {
                                 dayBean.year!! > currentYear -> DayState.ENABLE

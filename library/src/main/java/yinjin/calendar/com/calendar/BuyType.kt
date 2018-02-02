@@ -1,4 +1,4 @@
-package taotao.haoxiong.com.supercalendar.calendar
+package yinjin.calendar.com.calendar
 
 /**
  * desc:购买类型
