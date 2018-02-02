@@ -1,6 +1,7 @@
 # SuperCalendar
 
 日历控件
+[![](https://jitpack.io/v/dyguests/ObedientTextView.svg)]
 
 使用方法
 
@@ -65,4 +66,6 @@ Step 3 配合viewPager使用成滑动的日历控件
         <attr name="titleHeight" format="dimension"/>
         <attr name="bitmapMarginCircleCenter" format="dimension"/>
 
-[![](https://jitpack.io/v/dyguests/ObedientTextView.svg)]
+
+
+![img](/img/1.png)
