@@ -195,7 +195,8 @@ class MonthView : View {
     var isDraw = true
     /**添加刷新判断，防止异步情况下载进行drawView*/
     var isRefresh = true
-
+    /** 判断是否可以出发touchEvent */
+    var isEnableTouch=true
     constructor(context: Context) : super(context) {
         initData(context)
     }
@@ -252,7 +253,6 @@ class MonthView : View {
         if (isRefresh) {
             drawMonthTitle(canvas)
             drawDay(canvas)
-
         }
 
     }
@@ -1143,6 +1143,7 @@ class MonthView : View {
         Observable.create(
                 ObservableOnSubscribe<Int> {
                     isRefresh = false
+                    isEnableTouch=false
                     createDrawWeekData()
                     createMonthContentData()
                     it.onNext(1)
@@ -1152,6 +1153,7 @@ class MonthView : View {
                 .subscribe {
                     if (it == 1) {
                         isRefresh = true
+                        isEnableTouch=true
                         invalidate()
                     }
                 }
@@ -1160,6 +1162,9 @@ class MonthView : View {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (!isEnableTouch) {
+            return super.onTouchEvent(event)
+        }
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
                 startX = event.x
@@ -1246,14 +1251,17 @@ class MonthView : View {
                                 monthViewClick?.click(dayBean, DataManger.useBuyType, id)
                                 refreshView()
                             } else {
+                                isEnableTouch = true
                                 monthViewClick?.unClick(dayBean, DataManger.useBuyType, "您已经选过该日期")
                             }
+
                         }
                     }
                 }
+                return true
             }
         }
-        return true
+        return super.onTouchEvent(event)
     }
 }
 
