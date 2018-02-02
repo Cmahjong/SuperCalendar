@@ -1,4 +1,4 @@
-package taotao.haoxiong.com.supercalendar
+package com.yinjin.supercalendar
 
 import android.os.Bundle
 import android.support.v4.view.PagerAdapter

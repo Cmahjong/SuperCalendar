@@ -14,6 +14,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import yinjin.calendar.com.R
 import java.util.*
+import android.view.WindowManager
 
 
 /**
@@ -41,9 +42,7 @@ class MonthView : View {
         BitmapFactory.decodeResource(context.resources, R.drawable.ic_selecting)
     }
     /** view的宽度 */
-    val viewWidth by lazy {
-        1080
-    }
+    var viewWidth: Int = 1080
     /** view的高度 */
     val viewHeight by lazy {
         height
@@ -171,8 +170,8 @@ class MonthView : View {
     var titleHeight: Float = context.resources.getDimension(R.dimen.titleHeight)
     /**  */
     var textContent: String? = null
-    /** 行高 */
-    var bitmapMarginCircleCenter: Float = 30f
+    /** 图片距离圆心位置 */
+    var bitmapMarginCircleCenter: Float = context.resources.getDimension(R.dimen.bitmapMarginCircleCenter)
 
 
     /** 当前的日期 */
@@ -199,7 +198,7 @@ class MonthView : View {
     var isRefresh = true
 
     constructor(context: Context) : super(context) {
-        initData()
+        initData(context)
     }
 
     constructor(context: Context, @Nullable attrs: AttributeSet) : super(context, attrs) {
@@ -211,7 +210,7 @@ class MonthView : View {
     }
 
     private fun init(context: Context, @Nullable attrs: AttributeSet) {
-        initData()
+        initData(context)
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.MonthView)
         normalDayTextSize = attributes.getDimension(R.styleable.MonthView_normalTextSize, context.resources.getDimension(R.dimen.normalDayTextSize))
         normalDayTextColor = attributes.getColor(R.styleable.MonthView_normalTextColor, ContextCompat.getColor(context, R.color.normal_color))
@@ -229,13 +228,16 @@ class MonthView : View {
         selectingDateColor = attributes.getColor(R.styleable.MonthView_selectingDateColor, ContextCompat.getColor(context, R.color.selecting_date_color))
         lineHeight = attributes.getDimension(R.styleable.MonthView_lineHeight, context.resources.getDimension(R.dimen.lineHeight))
         titleHeight = attributes.getDimension(R.styleable.MonthView_titleHeight, context.resources.getDimension(R.dimen.titleHeight))
+        bitmapMarginCircleCenter = attributes.getDimension(R.styleable.MonthView_bitmapMarginCircleCenter, context.resources.getDimension(R.dimen.bitmapMarginCircleCenter))
     }
 
     /**
      * 初始化数据
      */
-    private fun initData() {
-
+    private fun initData(context: Context) {
+        val point = Point()
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(point)
+        viewWidth = point.x
         currentYear = Calendar.getInstance().get(Calendar.YEAR)
         year = currentYear
         currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
@@ -1175,7 +1177,7 @@ class MonthView : View {
                     TouchManager.monthDayBeanRect.forEach {
                         if (it.contains(event.x.toInt(), event.y.toInt())) {
                             val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
-                            dayBean.type= DataManger.useBuyType
+                            dayBean.type = DataManger.useBuyType
                             //判断日期是否在可点击的范围内
                             val dayBeanState = when {
                                 dayBean.year!! > currentYear -> DayState.ENABLE
@@ -1228,7 +1230,7 @@ class MonthView : View {
                             //是否可以点击并进行回调
                             if (isClick) {
                                 when (DataManger.useBuyType) {
-                                    BuyType.DAY->{
+                                    BuyType.DAY -> {
                                         //先判断是否选中，没有选中就添加进去，选中了就去掉
                                         if (DataManger.selectingDateByDay.contains(dayBean)) {
                                             DataManger.selectingDateByDay.remove(dayBean)
@@ -1236,7 +1238,7 @@ class MonthView : View {
                                             DataManger.selectingDateByDay.add(dayBean)
                                         }
                                     }
-                                    BuyType.MONTH, BuyType.SEASON ->{
+                                    BuyType.MONTH, BuyType.SEASON -> {
                                         //直接清空里面数据，原因是只能选中一次，然后提交，然后才能再选
                                         DataManger.selectingDayByMonthOrSeason.clear()
                                         DataManger.selectingDayByMonthOrSeason.add(dayBean)

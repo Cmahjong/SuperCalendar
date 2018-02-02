@@ -1,4 +1,4 @@
-package taotao.haoxiong.com.supercalendar
+package com.yinjin.supercalendar
 
 /**
  * desc:

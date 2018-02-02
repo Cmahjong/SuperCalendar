@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="taotao.haoxiong.com.supercalendar.MainActivity">
+    tools:context="com.yinjin.supercalendar.MainActivity">
 
 
     <TextView

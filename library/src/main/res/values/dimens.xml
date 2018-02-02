@@ -6,5 +6,6 @@
 <dimen name="selectedDateRadius">15sp</dimen>
 <dimen name="lineHeight">80dp</dimen>
 <dimen name="titleHeight">20dp</dimen>
+<dimen name="bitmapMarginCircleCenter">10sp</dimen>
 
 </resources>

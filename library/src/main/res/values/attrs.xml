@@ -38,5 +38,6 @@
         <attr name="lineHeight" format="dimension"/>
         <!--标题的高度-->
         <attr name="titleHeight" format="dimension"/>
+        <attr name="bitmapMarginCircleCenter" format="dimension"/>
     </declare-styleable>
 </resources>
