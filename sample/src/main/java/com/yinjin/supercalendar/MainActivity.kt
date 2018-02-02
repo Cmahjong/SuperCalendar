@@ -39,16 +39,6 @@ class MainActivity : AppCompatActivity() {
             refreshView()
         }
     }
-    val currentYear by lazy {
-        Calendar.getInstance().get(Calendar.YEAR)
-    }
-    val currentMonth by lazy {
-        Calendar.getInstance().get(Calendar.MONTH) + 1
-    }
-    val currentDay by lazy {
-        Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-    }
-    var refreshMinPosition = 0
 
     /** 适配器 */
     val pageAdapter: PagerAdapter by lazy {
@@ -95,7 +85,6 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     views.add(view)
-                    refreshMinPosition = position
                 }
                 if (view!!.parent === container) {
                     container.removeView(view)
