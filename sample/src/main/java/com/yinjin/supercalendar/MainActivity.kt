@@ -7,8 +7,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.yinjin.calendar.*
 import kotlinx.android.synthetic.main.activity_main.*
-import yinjin.calendar.com.calendar.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {

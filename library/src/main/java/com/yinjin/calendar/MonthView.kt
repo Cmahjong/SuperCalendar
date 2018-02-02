@@ -8,13 +8,12 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import io.reactivex.*
+import android.view.WindowManager
 import io.reactivex.Observable
+import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import com.yinjin.com.R
 import java.util.*
-import android.view.WindowManager
 
 
 /**

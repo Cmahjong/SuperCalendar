@@ -10,7 +10,7 @@ import java.util.*
 object CalendarUtil {
 
     fun getDaysInMonth(year: Int, month: Int): Int {
-        return when (month-1) {
+        return when (month - 1) {
             Calendar.JANUARY, Calendar.MARCH, Calendar.MAY, Calendar.JULY, Calendar.AUGUST, Calendar.OCTOBER, Calendar.DECEMBER -> 31
             Calendar.APRIL, Calendar.JUNE, Calendar.SEPTEMBER, Calendar.NOVEMBER -> 30
             Calendar.FEBRUARY -> if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0) 29 else 28
@@ -27,7 +27,7 @@ object CalendarUtil {
      */
     fun getFirstDayWeek(year: Int, month: Int): Int {
         val calendar = Calendar.getInstance()
-        calendar.set(year, month-1, 1)
+        calendar.set(year, month - 1, 1)
         return calendar.get(Calendar.DAY_OF_WEEK)
     }
 }

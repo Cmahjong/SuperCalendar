@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * desc:
+ * desc:数据util主要用来时间对比
  * time: 2018/1/25 0025
  * @author yinYin
  */

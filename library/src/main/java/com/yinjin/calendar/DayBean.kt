@@ -8,7 +8,7 @@ package com.yinjin.calendar
 class DayBean(var year: Int? = 0,
               var month: Int? = 0,
               var day: Int? = 0,
-              var type: BuyType?= BuyType.DAY) {
+              var type: BuyType? = BuyType.DAY) {
     override fun equals(other: Any?): Boolean {
         val bean = other as DayBean
         return bean.year == year && bean.month == month && bean.day == day
