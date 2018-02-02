@@ -67,5 +67,12 @@ Step 3 配合viewPager使用成滑动的日历控件
         <attr name="bitmapMarginCircleCenter" format="dimension"/>
 
 
+效果图
 
 ![img](/img/1.png)
+
+![img](/img/2.png)
+
+![img](/img/3.png)
+
+![img](/img/4.png)
