@@ -1,7 +1,6 @@
-package yinjin.calendar.com.calendar
+package com.yinjin.calendar
 
 import android.graphics.Rect
-import yinjin.calendar.com.calendar.DayBean
 
 /**
  * desc:点击的数据管理

@@ -1,4 +1,4 @@
-package yinjin.calendar.com.calendar
+package com.yinjin.calendar
 
 /**
  * desc:买的状态

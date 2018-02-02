@@ -1,4 +1,4 @@
-package yinjin.calendar.com;
+package com.yinjin.com;
 
 import org.junit.Test;
 

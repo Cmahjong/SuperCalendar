@@ -1,4 +1,4 @@
-package yinjin.calendar.com.calendar
+package com.yinjin.calendar
 
 import java.text.ParseException
 import java.text.SimpleDateFormat

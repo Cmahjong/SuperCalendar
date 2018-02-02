@@ -1,4 +1,4 @@
-package yinjin.calendar.com.calendar
+package com.yinjin.calendar
 
 import android.content.Context
 import android.graphics.*
@@ -12,7 +12,7 @@ import io.reactivex.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import yinjin.calendar.com.R
+import com.yinjin.com.R
 import java.util.*
 import android.view.WindowManager
 

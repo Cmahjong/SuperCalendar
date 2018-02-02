@@ -1,4 +1,4 @@
-package yinjin.calendar.com.calendar
+package com.yinjin.calendar
 
 /**
  * desc:数据管理类
