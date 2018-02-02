@@ -8,60 +8,77 @@
     tools:context="com.yinjin.supercalendar.MainActivity">
 
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
     <android.support.v4.view.ViewPager
         android:id="@+id/month_route_view_pager"
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"/>
+        app:layout_constraintTop_toBottomOf="@+id/day"/>
 
     <TextView
+        android:background="#cccccc"
+        android:textColor="#000000"
         android:id="@+id/month"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="56dp"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:gravity="center"
         android:text="按月买"
+        app:layout_constraintEnd_toStartOf="@+id/season"
         app:layout_constraintStart_toEndOf="@+id/day"
         app:layout_constraintTop_toTopOf="@+id/day"/>
 
     <TextView
-        android:id="@+id/year"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
+        android:background="#cccccc"
+        android:textColor="#000000"
+        android:id="@+id/season"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:gravity="center"
         android:text="按季买"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/month"
         app:layout_constraintTop_toTopOf="@+id/day"/>
 
     <TextView
+        android:background="#73ff00"
+        android:textColor="#0059ff"
         android:id="@+id/day"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
         android:text="按天买"
+        app:layout_constraintEnd_toStartOf="@+id/month"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/month_route_view_pager"/>
+        app:layout_constraintTop_toBottomOf="@+id/tv_date_time"/>
 
     <TextView
+        android:background="#cccccc"
+        android:textColor="#000000"
         android:id="@+id/down"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="32dp"
         android:text="完成"
+        android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day"/>
+        app:layout_constraintTop_toBottomOf="@+id/month_route_view_pager"/>
+
+    <TextView
+        android:id="@+id/tv_date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="2018年2月"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 </android.support.constraint.ConstraintLayout>

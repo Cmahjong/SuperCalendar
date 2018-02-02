@@ -1,5 +1,6 @@
 package com.yinjin.supercalendar
 
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
@@ -20,8 +21,7 @@ class MainActivity : AppCompatActivity() {
             add(monthView)
         }
     }
-    //预先加载三个
-    val monthView: MonthView by lazy {
+    private val monthView: MonthView by lazy {
         MonthView(this).apply {
             id = 0
             layoutParams = ViewGroup.LayoutParams(month_route_view_pager.width, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** 适配器 */
-    val pageAdapter: PagerAdapter by lazy {
+    private val pageAdapter: PagerAdapter by lazy {
         object : PagerAdapter() {
             override fun getCount(): Int {
                 return 100
@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 3, 14, BuyType.MONTH))
         DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 5, 14, BuyType.MONTH))
 
-        textView.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
+        tv_date_time.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
         month_route_view_pager.apply {
             adapter = pageAdapter
             lastPosition = 0
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
-        year.setOnClickListener {
+        season.setOnClickListener {
             if (DataManger.useBuyType != BuyType.SEASON) {
                 DataManger.useBuyType = BuyType.SEASON
                 if (!DataManger.selectingDateByDay.isEmpty() || !DataManger.selectingDayByMonthOrSeason.isEmpty()) {
@@ -148,6 +148,12 @@ class MainActivity : AppCompatActivity() {
                     views[lastPosition].refreshView()
                 }
             }
+            season.setTextColor(Color.parseColor("#0059ff"))
+            month.setTextColor(Color.parseColor("#000000"))
+            day.setTextColor(Color.parseColor("#000000"))
+            season.setBackgroundColor(Color.parseColor("#73ff00"))
+            month.setBackgroundColor(Color.parseColor("#cccccc"))
+            day.setBackgroundColor(Color.parseColor("#cccccc"))
         }
         month.setOnClickListener {
             if (DataManger.useBuyType != BuyType.MONTH) {
@@ -158,6 +164,12 @@ class MainActivity : AppCompatActivity() {
                     views[lastPosition].refreshView()
                 }
             }
+            season.setTextColor(Color.parseColor("#000000"))
+            month.setTextColor(Color.parseColor("#0059ff"))
+            day.setTextColor(Color.parseColor("#000000"))
+            season.setBackgroundColor(Color.parseColor("#cccccc"))
+            month.setBackgroundColor(Color.parseColor("#73ff00"))
+            day.setBackgroundColor(Color.parseColor("#cccccc"))
         }
         day.setOnClickListener {
             if (DataManger.useBuyType != BuyType.DAY) {
@@ -167,8 +179,13 @@ class MainActivity : AppCompatActivity() {
                     DataManger.selectingDayByMonthOrSeason.clear()
                     views[lastPosition].refreshView()
                 }
-
             }
+            season.setTextColor(Color.parseColor("#000000"))
+            month.setTextColor(Color.parseColor("#000000"))
+            day.setTextColor(Color.parseColor("#0059ff"))
+            season.setBackgroundColor(Color.parseColor("#cccccc"))
+            month.setBackgroundColor(Color.parseColor("#cccccc"))
+            day.setBackgroundColor(Color.parseColor("#73ff00"))
         }
         down.setOnClickListener {
             DataManger.selectedDateByDay.addAll(DataManger.selectingDateByDay)
@@ -204,7 +221,7 @@ class MainActivity : AppCompatActivity() {
                 monthView2.month = monthView1.month - 1
             }
         }
-        textView.text = monthView2.year.toString() + "年" + monthView2.month.toString() + "月"
+        tv_date_time.text = monthView2.year.toString() + "年" + monthView2.month.toString() + "月"
         //控制draw的频率
 
 //            monthView2.selectingDateByDay.add(DayBean(2018, 1, 12))
