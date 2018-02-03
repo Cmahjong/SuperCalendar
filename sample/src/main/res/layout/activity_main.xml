@@ -8,10 +8,10 @@
     tools:context="com.yinjin.supercalendar.MainActivity">
 
 
-    <android.support.v4.view.ViewPager
+    <com.yinjin.supercalendar.MonthViewPager
         android:id="@+id/month_route_view_pager"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -81,4 +81,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
 </android.support.constraint.ConstraintLayout>
