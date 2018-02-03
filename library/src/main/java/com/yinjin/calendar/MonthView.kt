@@ -303,7 +303,7 @@ class MonthView : View {
         if (remainder > 0) {
             rowNumber += 1
         }
-        viewHeight= (rowNumber*lineHeight+weekTextSize+20).toInt()
+        viewHeight= (rowNumber*lineHeight+weekTextSize+dayMarinWeekSize+10).toInt()
         //每次进行onDraw的时候清空里面的数据，防止重叠
         TouchManager.monthDayBeanRect.clear()
         TouchManager.monthAllDayBean.clear()
