@@ -833,8 +833,8 @@ class MonthView : View {
                     circleBitmapBean.bitmap = selectedDateOverdueBitmap
                 }
             }
+            circleBitmapBeanListByDay.add(circleBitmapBean)
         }
-        circleBitmapBeanListByDay.add(circleBitmapBean)
 
     }
 
@@ -853,8 +853,8 @@ class MonthView : View {
             circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
             circleBitmapBean.circleY = (y + i * lineHeight / 2)
             circleBitmapBean.bitmap = selectingDateBitmap
+            circleBitmapBeanListBySelectingDay.add(circleBitmapBean)
         }
-        circleBitmapBeanListBySelectingDay.add(circleBitmapBean)
     }
 
 
