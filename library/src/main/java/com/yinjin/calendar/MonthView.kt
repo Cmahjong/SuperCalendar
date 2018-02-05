@@ -196,9 +196,10 @@ class MonthView : View {
     /**添加刷新判断，防止异步情况下载进行drawView*/
     var isRefresh = true
     /** 判断是否可以出发touchEvent */
-    var isEnableTouch=true
+    var isEnableTouch = true
     /** view的高度 */
-    var viewHeight:Int=0
+    var viewHeight: Int = 0
+
     constructor(context: Context) : super(context) {
         initData(context)
     }
@@ -304,7 +305,7 @@ class MonthView : View {
         if (remainder > 0) {
             rowNumber += 1
         }
-        viewHeight= (rowNumber*lineHeight+weekTextSize+dayMarinWeekSize+10).toInt()
+        viewHeight = (rowNumber * lineHeight + weekTextSize + dayMarinWeekSize + 10).toInt()
         //每次进行onDraw的时候清空里面的数据，防止重叠
         TouchManager.monthDayBeanRect.clear()
         TouchManager.monthAllDayBean.clear()
@@ -416,7 +417,7 @@ class MonthView : View {
         setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, isCurrentMonthDay, circleBitmapBean)
         circleBitmapBean.content = textContent
         circleBitmapBean.textX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - dayPaint.measureText(circleBitmapBean.content) / 2).toFloat()
-        circleBitmapBean.textY = (y - (dayPaint.ascent() + dayPaint.descent()) / 2 +lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+        circleBitmapBean.textY = (y - (dayPaint.ascent() + dayPaint.descent()) / 2 + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
         createDayData(dayBean, k, i, circleBitmapBean)
 
     }
@@ -425,7 +426,7 @@ class MonthView : View {
      * 添加管理数据
      */
     private fun addManagerData(k: Int, i: Int, dayBean: DayBean) {
-        TouchManager.monthDayBeanRect.add(Rect((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))), (y +lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize- selectedDateRadius).toInt(), paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt()))
+        TouchManager.monthDayBeanRect.add(Rect((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt()))
         TouchManager.monthAllDayBean.add(dayBean)
     }
 
@@ -478,11 +479,11 @@ class MonthView : View {
         val centerDayRect = Rect()
         /*每个天的园的所在矩形*/
         val circleDayRect = RectF()
-        dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter).toInt())
-        leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt().toFloat())
+        dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter).toInt())
+        leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt().toFloat())
         circleBitmapBean.dst = dst
         circleBitmapBean.leftDayRect = leftDayRect
         circleBitmapBean.rightDayRect = rightDayRect
@@ -500,7 +501,7 @@ class MonthView : View {
                 when (k) {
                     7 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     }
                 }
                 circleBitmapBeanListByMonth.add(circleBitmapBean)
@@ -521,7 +522,7 @@ class MonthView : View {
                 when (k) {
                     7 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     }
                 }
                 circleBitmapBeanListByMonth.add(circleBitmapBean)
@@ -535,7 +536,7 @@ class MonthView : View {
                 when (k) {
                     7 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     }
                 }
                 circleBitmapBeanListByMonth.add(circleBitmapBean)
@@ -549,7 +550,7 @@ class MonthView : View {
                 when (k) {
                     1 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circlePaint.color = circleBitmapBean.circlePaintColor!!
                     }
                 }
@@ -564,7 +565,7 @@ class MonthView : View {
                 when (k) {
                     1 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     }
                 }
                 circleBitmapBeanListByMonth.add(circleBitmapBean)
@@ -575,7 +576,7 @@ class MonthView : View {
                 circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
                 circleBitmapBean.circlePaintColor = selectedDateOverdueColor
                 circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                 circleBitmapBean.bitmap = selectedDateOverdueBitmap
                 circleBitmapBeanListByMonth.add(circleBitmapBean)
             }
@@ -601,11 +602,11 @@ class MonthView : View {
         val centerDayRect = Rect()
         /*每个天的园的所在矩形*/
         val circleDayRect = RectF()
-        dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter).toInt())
-        leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt())
-        circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize + selectedDateRadius).toInt().toFloat())
+        dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter).toInt())
+        leftDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        rightDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toInt())), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        centerDayRect.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1)))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt(), (((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt())
+        circleDayRect.set((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) - selectedDateRadius).toInt().toFloat())), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - selectedDateRadius).toInt().toFloat(), ((((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5) + selectedDateRadius)).toInt().toFloat()))), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize + selectedDateRadius).toInt().toFloat())
         circleBitmapBean.leftDayRect = leftDayRect
         circleBitmapBean.rightDayRect = rightDayRect
         circleBitmapBean.centerDayRect = centerDayRect
@@ -621,17 +622,17 @@ class MonthView : View {
                 when (k) {
                     7 -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                     1 -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                     else -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                 }
@@ -645,17 +646,17 @@ class MonthView : View {
                 when (k) {
                     7 -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                     1 -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                     else -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
 
                     }
@@ -668,7 +669,7 @@ class MonthView : View {
                 circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
                 circleBitmapBean.circlePaintColor = selectingLineColor
                 circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                 circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             4, 6 -> {
@@ -681,12 +682,12 @@ class MonthView : View {
                     }
                     else -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k))).toFloat())
                     }
                 }
                 circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                 circleBitmapBeanListBySelectingMonth.add(circleBitmapBean)
             }
             8 -> {
@@ -697,11 +698,11 @@ class MonthView : View {
                 when (k) {
                     1 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     }
                     else -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                 }
@@ -715,12 +716,12 @@ class MonthView : View {
                 when (k) {
                     1 -> {
                         circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                        circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circlePaint.color = circleBitmapBean.circlePaintColor!!
                     }
                     else -> {
                         circleBitmapBean.lineStartX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 1))).toFloat())
-                        circleBitmapBean.lineCenterY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                        circleBitmapBean.lineCenterY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                         circleBitmapBean.lineEndX = ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat())
                     }
                 }
@@ -808,7 +809,7 @@ class MonthView : View {
             }
             //根据原型，是先画圆在画图
             val dst = Rect()
-            dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter).toInt())
+            dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter).toInt())
             circleBitmapBean.dst = dst
             when (buyState) {
                 BuyState.NOT_OVERDUE -> {
@@ -816,7 +817,7 @@ class MonthView : View {
                     circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
                     circleBitmapBean.circlePaintColor = selectedDateColor
                     circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                    circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                    circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     circleBitmapBean.bitmap = selectedDateBitmap
                 }
                 BuyState.CURRENT -> {
@@ -824,7 +825,7 @@ class MonthView : View {
                     circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT_BOLD
                     circleBitmapBean.circlePaintColor = selectedDateColor
                     circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                    circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                    circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     circleBitmapBean.bitmap = selectedDateBitmap
                 }
                 BuyState.OVERDUE -> {
@@ -832,7 +833,7 @@ class MonthView : View {
                     circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
                     circleBitmapBean.circlePaintColor = selectedDateOverdueColor
                     circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-                    circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+                    circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
                     circleBitmapBean.bitmap = selectedDateOverdueBitmap
                 }
             }
@@ -848,13 +849,13 @@ class MonthView : View {
         if (DataManger.selectingDateByDay.contains(dayBean)) {
             //根据原型，是先画圆在画图
             val dst = Rect()
-            dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize - bitmapMarginCircleCenter).toInt())
+            dst.set(((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter - selectedDateOverdueBitmap.height).toInt(), ((paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5)) + bitmapMarginCircleCenter + selectedDateOverdueBitmap.width).toInt()), (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize - bitmapMarginCircleCenter).toInt())
             circleBitmapBean.dst = dst
             circleBitmapBean.dayPaintColor = Color.parseColor("#ffffff")
             circleBitmapBean.dayPaintTypeface = Typeface.DEFAULT
             circleBitmapBean.circlePaintColor = selectingLineColor
             circleBitmapBean.circleX = (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / 7 * (k - 0.5))).toFloat()
-            circleBitmapBean.circleY = (y + lineHeight* (i - 0.5)+dayMarinWeekSize+weekTextSize).toFloat()
+            circleBitmapBean.circleY = (y + lineHeight * (i - 0.5) + dayMarinWeekSize + weekTextSize).toFloat()
             circleBitmapBean.bitmap = selectingDateBitmap
             circleBitmapBeanListBySelectingDay.add(circleBitmapBean)
         }
@@ -1104,12 +1105,21 @@ class MonthView : View {
      * @param day 天
      */
     private fun setMonthDayPaintColor(year: Int, month: Int, day: Int, isCurrentMonthDay: Boolean, circleBitmapBean: CircleBitmapBean) {
+        //通过选择类型来获取选择时间的显示
+        val limitDay = when (DataManger.useBuyType) {
+            BuyType.DAY -> {
+                2
+            }
+            BuyType.MONTH, BuyType.SEASON -> {
+                8
+            }
+        }
         dayState = when {
             year > currentYear -> DayState.ENABLE
             year == currentYear -> when {
                 month > currentMonth -> DayState.ENABLE
                 month == currentMonth -> when {
-                    day > currentDay + 3 -> DayState.ENABLE
+                    day > currentDay + limitDay -> DayState.ENABLE
                     day == currentDay -> DayState.CURRENT
                     else -> DayState.NOT_ENABLE
                 }
@@ -1146,7 +1156,7 @@ class MonthView : View {
         Observable.create(
                 ObservableOnSubscribe<Int> {
                     isRefresh = false
-                    isEnableTouch=false
+                    isEnableTouch = false
                     createDrawWeekData()
                     createMonthContentData()
                     it.onNext(1)
@@ -1156,7 +1166,7 @@ class MonthView : View {
                 .subscribe {
                     if (it == 1) {
                         isRefresh = true
-                        isEnableTouch=true
+                        isEnableTouch = true
                         invalidate()
                     }
                 }
@@ -1178,7 +1188,7 @@ class MonthView : View {
                     //判断是否可以点击，方便进行回调
                     var isClick = true
                     //判断用户是点击还是滑动
-                    if (isEnableTouch&&Math.abs(event.x - startX) <= ViewConfiguration.get(context).scaledTouchSlop &&
+                    if (isEnableTouch && Math.abs(event.x - startX) <= ViewConfiguration.get(context).scaledTouchSlop &&
                             Math.abs(event.y - startY) <= ViewConfiguration.get(context).scaledTouchSlop) {
                         //便利循环找到点击区域对应的日期
                         TouchManager.monthDayBeanRect.forEach {
@@ -1186,12 +1196,21 @@ class MonthView : View {
                                 val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
                                 dayBean.type = DataManger.useBuyType
                                 //判断日期是否在可点击的范围内
+                                //通过选择类型来获取选择时间的显示
+                                val limitDay = when (DataManger.useBuyType) {
+                                    BuyType.DAY -> {
+                                        2
+                                    }
+                                    BuyType.MONTH, BuyType.SEASON -> {
+                                        8
+                                    }
+                                }
                                 val dayBeanState = when {
                                     dayBean.year!! > currentYear -> DayState.ENABLE
                                     dayBean.year!! == currentYear -> when {
                                         dayBean.month!! > currentMonth -> DayState.ENABLE
                                         dayBean.month!! == currentMonth -> when {
-                                            dayBean.day!! > currentDay + 3 -> DayState.ENABLE
+                                            dayBean.day!! > currentDay + limitDay -> DayState.ENABLE
                                             dayBean.day!! == currentDay -> DayState.CURRENT
                                             else -> DayState.NOT_ENABLE
                                         }
@@ -1262,7 +1281,7 @@ class MonthView : View {
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("...","产生了ConcurrentModificationException异常，让用户重新选")
+                    Log.e("...", "产生了ConcurrentModificationException异常，让用户重新选")
                 }
                 return true
             }
