@@ -5,6 +5,7 @@ import android.graphics.*
 import android.support.annotation.Nullable
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -1164,101 +1165,104 @@ class MonthView : View {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (!isEnableTouch) {
-            return super.onTouchEvent(event)
-        }
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                startX = event.x
-                startY = event.y
+                if (isEnableTouch) {
+                    startX = event.x
+                    startY = event.y
+                }
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                //判断是否可以点击，方便进行回调
-                var isClick = true
-                //判断用户是点击还是滑动
-                if (Math.abs(event.x - startX) <= ViewConfiguration.get(context).scaledTouchSlop &&
-                        Math.abs(event.y - startY) <= ViewConfiguration.get(context).scaledTouchSlop) {
-                    //便利循环找到点击区域对应的日期
-                    TouchManager.monthDayBeanRect.forEach {
-                        if (it.contains(event.x.toInt(), event.y.toInt())) {
-                            val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
-                            dayBean.type = DataManger.useBuyType
-                            //判断日期是否在可点击的范围内
-                            val dayBeanState = when {
-                                dayBean.year!! > currentYear -> DayState.ENABLE
-                                dayBean.year!! == currentYear -> when {
-                                    dayBean.month!! > currentMonth -> DayState.ENABLE
-                                    dayBean.month!! == currentMonth -> when {
-                                        dayBean.day!! > currentDay + 3 -> DayState.ENABLE
-                                        dayBean.day!! == currentDay -> DayState.CURRENT
+                try {
+                    //判断是否可以点击，方便进行回调
+                    var isClick = true
+                    //判断用户是点击还是滑动
+                    if (isEnableTouch&&Math.abs(event.x - startX) <= ViewConfiguration.get(context).scaledTouchSlop &&
+                            Math.abs(event.y - startY) <= ViewConfiguration.get(context).scaledTouchSlop) {
+                        //便利循环找到点击区域对应的日期
+                        TouchManager.monthDayBeanRect.forEach {
+                            if (it.contains(event.x.toInt(), event.y.toInt())) {
+                                val dayBean = TouchManager.monthAllDayBean[TouchManager.monthDayBeanRect.indexOf(it)]
+                                dayBean.type = DataManger.useBuyType
+                                //判断日期是否在可点击的范围内
+                                val dayBeanState = when {
+                                    dayBean.year!! > currentYear -> DayState.ENABLE
+                                    dayBean.year!! == currentYear -> when {
+                                        dayBean.month!! > currentMonth -> DayState.ENABLE
+                                        dayBean.month!! == currentMonth -> when {
+                                            dayBean.day!! > currentDay + 3 -> DayState.ENABLE
+                                            dayBean.day!! == currentDay -> DayState.CURRENT
+                                            else -> DayState.NOT_ENABLE
+                                        }
                                         else -> DayState.NOT_ENABLE
                                     }
                                     else -> DayState.NOT_ENABLE
                                 }
-                                else -> DayState.NOT_ENABLE
-                            }
-                            //日期不可点击
-                            if (dayBeanState != DayState.ENABLE) {
-                                isClick = false
-                            }
-                            //根据不同的type做相应的逻辑
-                            when (DataManger.useBuyType) {
-                                BuyType.DAY -> {
-                                    //按天选选中的日期（天）里面有这个日期
-                                    if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
-                                        if (DataManger.selectedDateByDay.contains(dayBean)) {
-                                            isClick = false
-                                        }
-                                    }
-                                    //按天选正在选的日期（月或者季）里面有这个日期
-                                    if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
-                                        if (!DateUtil.isSelect(dayBean)) {
-                                            isClick = false
-                                        }
-                                    }
+                                //日期不可点击
+                                if (dayBeanState != DayState.ENABLE) {
+                                    isClick = false
                                 }
-                                BuyType.MONTH, BuyType.SEASON -> {
-                                    //按月或者季选正在选的日期（天）里面是否包含已选过的日期
-                                    if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
-                                        if (!DateUtil.isSelectByMonth(dayBean)) {
-                                            isClick = false
-                                        }
-                                    }
-                                    //按月或者季选正在选的日期（月或者季）里面是否包含已选过的日期
-                                    if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
-                                        if (!DateUtil.isSelect2ByMonth(dayBean)) {
-                                            isClick = false
-                                        }
-                                    }
-                                }
-                            }
-                            //是否可以点击并进行回调
-                            if (isClick) {
+                                //根据不同的type做相应的逻辑
                                 when (DataManger.useBuyType) {
                                     BuyType.DAY -> {
-                                        //先判断是否选中，没有选中就添加进去，选中了就去掉
-                                        if (DataManger.selectingDateByDay.contains(dayBean)) {
-                                            DataManger.selectingDateByDay.remove(dayBean)
-                                        } else {
-                                            DataManger.selectingDateByDay.add(dayBean)
+                                        //按天选选中的日期（天）里面有这个日期
+                                        if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
+                                            if (DataManger.selectedDateByDay.contains(dayBean)) {
+                                                isClick = false
+                                            }
+                                        }
+                                        //按天选正在选的日期（月或者季）里面有这个日期
+                                        if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
+                                            if (!DateUtil.isSelect(dayBean)) {
+                                                isClick = false
+                                            }
                                         }
                                     }
                                     BuyType.MONTH, BuyType.SEASON -> {
-                                        //直接清空里面数据，原因是只能选中一次，然后提交，然后才能再选
-                                        DataManger.selectingDayByMonthOrSeason.clear()
-                                        DataManger.selectingDayByMonthOrSeason.add(dayBean)
+                                        //按月或者季选正在选的日期（天）里面是否包含已选过的日期
+                                        if (DataManger.selectedDateByDay.isNotEmpty() && isClick) {
+                                            if (!DateUtil.isSelectByMonth(dayBean)) {
+                                                isClick = false
+                                            }
+                                        }
+                                        //按月或者季选正在选的日期（月或者季）里面是否包含已选过的日期
+                                        if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && isClick) {
+                                            if (!DateUtil.isSelect2ByMonth(dayBean)) {
+                                                isClick = false
+                                            }
+                                        }
                                     }
                                 }
-                                monthViewClick?.click(dayBean, DataManger.useBuyType, id)
-                                refreshView()
-                            } else {
-                                isEnableTouch = true
-                                monthViewClick?.unClick(dayBean, DataManger.useBuyType, "您已经选过该日期")
-                            }
+                                //是否可以点击并进行回调
+                                if (isClick) {
+                                    when (DataManger.useBuyType) {
+                                        BuyType.DAY -> {
+                                            //先判断是否选中，没有选中就添加进去，选中了就去掉
+                                            if (DataManger.selectingDateByDay.contains(dayBean)) {
+                                                DataManger.selectingDateByDay.remove(dayBean)
+                                            } else {
+                                                DataManger.selectingDateByDay.add(dayBean)
+                                            }
+                                        }
+                                        BuyType.MONTH, BuyType.SEASON -> {
+                                            //直接清空里面数据，原因是只能选中一次，然后提交，然后才能再选
+                                            DataManger.selectingDayByMonthOrSeason.clear()
+                                            DataManger.selectingDayByMonthOrSeason.add(dayBean)
+                                        }
+                                    }
+                                    monthViewClick?.click(dayBean, DataManger.useBuyType, id)
+                                    refreshView()
+                                } else {
+                                    isEnableTouch = true
+                                    monthViewClick?.unClick(dayBean, DataManger.useBuyType, "您已经选过该日期")
+                                }
 
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e("...","产生了ConcurrentModificationException异常，让用户重新选")
                 }
                 return true
             }

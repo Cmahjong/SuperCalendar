@@ -20,7 +20,7 @@ class MonthViewPager :ViewPager {
         val position = currentItem
         val view = findViewById<MonthView>(position)
         view?.measure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(measuredWidth, view.viewHeight)
+        setMeasuredDimension(measuredWidth, measureHeight(heightMeasureSpec,view))
     }
 
     /**
