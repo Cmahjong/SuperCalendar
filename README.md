@@ -66,7 +66,7 @@ Step 3 配合viewPager使用成滑动的日历控件
         <attr name="titleHeight" format="dimension"/>
         <attr name="bitmapMarginCircleCenter" format="dimension"/>
 
-
+    新增一个参数viewHeight，用来获取MonthView的高度
 效果图
 
 ![img](/img/1.png)
