@@ -12,74 +12,140 @@
         android:id="@+id/month_route_view_pager"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/day"/>
+        app:layout_constraintTop_toBottomOf="@+id/rel"/>
 
-    <TextView
-        android:background="#cccccc"
-        android:textColor="#000000"
-        android:id="@+id/month"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:text="按月买"
-        app:layout_constraintEnd_toStartOf="@+id/season"
-        app:layout_constraintStart_toEndOf="@+id/day"
-        app:layout_constraintTop_toTopOf="@+id/day"/>
 
-    <TextView
-        android:background="#cccccc"
-        android:textColor="#000000"
-        android:id="@+id/season"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:text="按季买"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/liner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/month"
-        app:layout_constraintTop_toTopOf="@+id/day"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:background="#73ff00"
-        android:textColor="#0059ff"
-        android:id="@+id/day"
-        android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="14dp"
+            android:text="购买期限"
+            android:textColor="#ff000000"
+            android:textSize="15sp"/>
+
+        <RadioGroup
+            android:id="@+id/rg_buy_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="17dp"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+
+            <RadioButton
+                android:id="@+id/rb_type_day"
+                style="@style/buy_carwash_form_item_radio"
+                android:checked="true"
+                android:text="按天购买"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"/>
+
+            <RadioButton
+                android:id="@+id/rb_type_month"
+                style="@style/buy_carwash_form_item_radio"
+                android:text="按月购买"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"/>
+
+            <RadioButton
+                android:id="@+id/rb_type_quarter"
+                style="@style/buy_carwash_form_item_radio"
+                android:text="按季购买"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/rel"
+        android:layout_width="368dp"
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="按天买"
-        app:layout_constraintEnd_toStartOf="@+id/month"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_date_time"/>
+        app:layout_constraintTop_toBottomOf="@+id/liner">
+
+        <ImageView
+            android:id="@+id/img_month_pre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="46dp"
+            android:layout_marginStart="46dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_car_wash_left"/>
+
+        <TextView
+            android:id="@+id/tv_selected_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="2018年2月"
+            android:textColor="#ff000000"
+            android:textSize="16dp"
+            />
+
+        <ImageView
+            android:id="@+id/img_month_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="46dp"
+            android:layout_marginRight="46dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_car_wash_right"/>
+    </RelativeLayout>
 
     <TextView
-        android:background="#cccccc"
-        android:textColor="#000000"
+
+        android:padding="8dp"
+        android:background="#1C7FFD"
         android:id="@+id/down"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
         android:text="完成"
-        android:padding="8dp"
+        android:textColor="#ffffff"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/month_route_view_pager"/>
-
-    <TextView
-        android:id="@+id/tv_date_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="2018年2月"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
+        app:layout_constraintStart_toStartOf="parent"/>
 </android.support.constraint.ConstraintLayout>
