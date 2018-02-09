@@ -17,7 +17,7 @@ Step 1 Add it in your root build.gradle at the end of repositories:
 Step 2. Add the dependency
 
 	dependencies {
-	        compile 'com.github.yinjinyj:SuperCalendar:1.0.5'
+	        compile 'com.github.yinjinyj:SuperCalendar:1.0.6'
 	}
   
 Step 3 配合viewPager使用成滑动的日历控件
