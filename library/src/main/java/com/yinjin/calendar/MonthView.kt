@@ -10,10 +10,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowManager
-import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.util.*
 
 
@@ -1153,25 +1151,17 @@ class MonthView : View {
      * 以异步操作进行处理，防止卡顿，以空间换时间
      */
     fun refreshView() {
-        Observable.create(
-                ObservableOnSubscribe<Int> {
-                    isRefresh = false
-                    isEnableTouch = false
-                    createDrawWeekData()
-                    createMonthContentData()
-                    it.onNext(1)
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it == 1) {
-                        isRefresh = true
-                        isEnableTouch = true
-                        invalidate()
-                    }
-                }
-
-
+        doAsync {
+            isRefresh = false
+            isEnableTouch = false
+            createDrawWeekData()
+            createMonthContentData()
+            uiThread {
+                isRefresh = true
+                isEnableTouch = true
+                invalidate()
+            }
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
