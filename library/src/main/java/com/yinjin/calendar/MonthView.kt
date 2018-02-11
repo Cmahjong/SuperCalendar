@@ -1281,9 +1281,9 @@ class MonthView : View {
 }
 
 data class WeekBean(val weekPaintColor: Int, val content: String)
-data class CircleBitmapBean(var dayPaintColor: Int? = 0,
+data class CircleBitmapBean(var dayPaintColor: Int? = Color.parseColor("#000000"),
                             var dayPaintTypeface: Typeface? = Typeface.DEFAULT,
-                            var circlePaintColor: Int? = 0,
+                            var circlePaintColor: Int? = Color.parseColor("#0f1C7FFD"),
                             var type: Int? = -1,
                             var circleX: Float? = 0F,
                             var circleY: Float? = 0f,

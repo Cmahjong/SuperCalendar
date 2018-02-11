@@ -116,9 +116,9 @@ class MainActivity : AppCompatActivity() {
 //        DataManger.selectedDateByDay.add(DayBean(2018, 6, 26))
 //        DataManger.selectedDateByDay.add(DayBean(2018, 6, 28))
 //        DataManger.selectedDateByDay.add(DayBean(2018, 6, 1))
-//        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 1, 14, BuyType.MONTH))
-//        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 3, 14, BuyType.MONTH))
-//        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 5, 14, BuyType.MONTH))
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 1, 14, BuyType.MONTH))
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 3, 14, BuyType.MONTH))
+        DataManger.selectedDayByMonthOrSeason.add(DayBean(2018, 5, 14, BuyType.MONTH))
 
         tv_selected_time.text = Calendar.getInstance().get(Calendar.YEAR).toString() + "年" + (Calendar.getInstance().get(Calendar.MONTH) + 1).toString() + "月"
         month_route_view_pager.apply {
