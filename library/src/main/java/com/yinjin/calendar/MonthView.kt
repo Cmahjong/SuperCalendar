@@ -905,9 +905,14 @@ class MonthView : View {
             }
         }
         circleBitmapBeanDay.forEach {
-            dayPaint.color = it.dayPaintColor!!
-            dayPaint.typeface = it.dayPaintTypeface
-            canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
+            try {
+                dayPaint.color = it.dayPaintColor!!
+                dayPaint.typeface = it.dayPaintTypeface
+                canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
+            } catch (e: Exception) {
+                Log.e("MONTH_VIEW","不知道为什么没有赋值",e)
+            }
+
         }
 
 
