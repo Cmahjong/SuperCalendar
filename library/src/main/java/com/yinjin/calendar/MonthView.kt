@@ -192,9 +192,9 @@ class MonthView : View {
     /**按断是否需要重新drawView，减少draw的次数，提升性能*/
     var isDraw = true
     /**添加刷新判断，防止异步情况下载进行drawView*/
-    var isRefresh = true
+    var isRefresh = false
     /** 判断是否可以出发touchEvent */
-    var isEnableTouch = true
+    var isEnableTouch = false
     /** view的高度 */
     var viewHeight: Int = 0
 
@@ -272,8 +272,13 @@ class MonthView : View {
     private fun drawMonthTitle(canvas: Canvas?) {
         if (drawWeekList.isNotEmpty()) {
             this.drawWeekList.forEach {
-                weekPaint.color = it.weekPaintColor
-                canvas?.drawText(it.content, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / weeks.size * (weeks.indexOf(it.content) + 0.5)) - weekPaint.measureText(it.content) / 2).toFloat(), y + weekTextSize, weekPaint)
+                try {
+                    weekPaint.color = it.weekPaintColor
+                    canvas?.drawText(it.content, (paddingLeft + ((viewWidth - paddingLeft - paddingRight) / weeks.size * (weeks.indexOf(it.content) + 0.5)) - weekPaint.measureText(it.content) / 2).toFloat(), y + weekTextSize, weekPaint)
+
+                } catch (e: Exception) {
+                    Log.e("MONTH_VIEW", "不知道为什么没有赋值", e)
+                }
             }
         }
     }
@@ -910,7 +915,7 @@ class MonthView : View {
                 dayPaint.typeface = it.dayPaintTypeface
                 canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
             } catch (e: Exception) {
-                Log.e("MONTH_VIEW","不知道为什么没有赋值",e)
+                Log.e("MONTH_VIEW", "不知道为什么没有赋值", e)
             }
 
         }
