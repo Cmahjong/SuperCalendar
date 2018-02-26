@@ -1170,6 +1170,7 @@ class MonthView : View {
                 isRefresh = true
                 isEnableTouch = true
                 invalidate()
+                postDelayed({requestLayout()},200)
             }
         }
     }
