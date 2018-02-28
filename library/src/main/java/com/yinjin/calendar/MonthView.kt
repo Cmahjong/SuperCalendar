@@ -165,8 +165,6 @@ class MonthView : View {
     var lineHeight: Float = context.resources.getDimension(R.dimen.lineHeight)
     /** 标题的高度 */
     var titleHeight: Float = context.resources.getDimension(R.dimen.titleHeight)
-    /**  */
-    var textContent: String? = null
     /** 图片距离圆心位置 */
     var bitmapMarginCircleCenter: Float = context.resources.getDimension(R.dimen.bitmapMarginCircleCenter)
 
@@ -287,11 +285,7 @@ class MonthView : View {
      * 画里面的日期
      */
     private fun createMonthContentData() {
-        circleBitmapBeanListByDay.clear()
-        circleBitmapBeanDay.clear()
-        circleBitmapBeanListBySelectingDay.clear()
-        circleBitmapBeanListByMonth.clear()
-        circleBitmapBeanListBySelectingMonth.clear()
+
         //当天是星期几
         val firstDayWeek = CalendarUtil.getFirstDayWeek(year, month)
         //上一个月的总天数
@@ -319,7 +313,6 @@ class MonthView : View {
                         val dayBean = DayBean()
                         //画日期
                         if ((k + (i - 1) * 7) > daysCurrentMonth) {
-                            textContent = ((k + (i - 1) * 7) - daysCurrentMonth).toString()
                             //画圈 当前月份为12 下一个月就是1月
                             if (month == 12) {
                                 dayBean.year = year + 1
@@ -331,17 +324,16 @@ class MonthView : View {
                             dayBean.day = ((k + (i - 1) * 7) - daysCurrentMonth)
                             //设置画笔颜色 当前选择的月的下一个月
                             val circleBitmapBean = CircleBitmapBean()
-                            createCalendarData(dayBean, circleBitmapBean, k, i, false)
+                            createCalendarData(dayBean, circleBitmapBean, k, i, false, ((k + (i - 1) * 7) - daysCurrentMonth).toString())
 
                         } else {
-                            textContent = (k + (i - 1) * 7).toString()
                             //画圈
                             dayBean.year = year
                             dayBean.month = month
                             dayBean.day = ((k + (i - 1) * 7))
                             //设置画笔颜色 当前选择的月
                             val circleBitmapBean = CircleBitmapBean()
-                            createCalendarData(dayBean, circleBitmapBean, k, i, true)
+                            createCalendarData(dayBean, circleBitmapBean, k, i, true, (k + (i - 1) * 7).toString())
                         }
                     }
 
@@ -352,7 +344,6 @@ class MonthView : View {
                 for (k in 1..7) {
                     val dayBean = DayBean()
                     if (firstDayWeek > k) {
-                        textContent = (daysLastMonth + k - (firstDayWeek - 1)).toString()
                         //画圈 月份为1 上一个月就是12月
                         if (month == 1) {
                             dayBean.year = year - 1
@@ -364,16 +355,15 @@ class MonthView : View {
                         dayBean.day = (daysLastMonth + k - (firstDayWeek - 1))
                         //设置画笔颜色 当前选择的月的下一个月
                         val circleBitmapBean = CircleBitmapBean()
-                        createCalendarData(dayBean, circleBitmapBean, k, 1, false)
+                        createCalendarData(dayBean, circleBitmapBean, k, 1, false, (daysLastMonth + k - (firstDayWeek - 1)).toString())
                     } else {
-                        textContent = (k - firstDayWeek + 1).toString()
                         //画圈
                         dayBean.year = year
                         dayBean.month = month
                         dayBean.day = (k - firstDayWeek + 1)
                         //设置画笔颜色 当前选择的月
                         val circleBitmapBean = CircleBitmapBean()
-                        createCalendarData(dayBean, circleBitmapBean, k, 1, true)
+                        createCalendarData(dayBean, circleBitmapBean, k, 1, true, (k - firstDayWeek + 1).toString())
                     }
 
                 }
@@ -381,7 +371,6 @@ class MonthView : View {
                 for (i in 2..rowNumber) {
                     for (k in 1..7) {
                         val dayBean = DayBean()
-                        textContent = (((k - firstDayWeek + 1) + (i - 1) * 7) - daysCurrentMonth).toString()
                         //设置画笔颜色 当前选择的月的下一个月
                         if (((k - firstDayWeek + 1) + (i - 1) * 7) > daysCurrentMonth) {
                             //画圈 当前月份为12 下一个月就是1月
@@ -395,16 +384,15 @@ class MonthView : View {
                             dayBean.day = (((k - firstDayWeek + 1) + (i - 1) * 7) - daysCurrentMonth)
                             //设置画笔颜色 当前选择的月的下一个月
                             val circleBitmapBean = CircleBitmapBean()
-                            createCalendarData(dayBean, circleBitmapBean, k, i, false)
+                            createCalendarData(dayBean, circleBitmapBean, k, i, false, (((k - firstDayWeek + 1) + (i - 1) * 7) - daysCurrentMonth).toString())
                         } else {
-                            textContent = ((k - firstDayWeek + 1) + (i - 1) * 7).toString()
                             //画圈
                             dayBean.year = year
                             dayBean.month = month
                             dayBean.day = ((k - firstDayWeek + 1) + (i - 1) * 7)
                             //设置画笔颜色 当前选择的月的下一个月
                             val circleBitmapBean = CircleBitmapBean()
-                            createCalendarData(dayBean, circleBitmapBean, k, i, true)
+                            createCalendarData(dayBean, circleBitmapBean, k, i, true, ((k - firstDayWeek + 1) + (i - 1) * 7).toString())
                         }
                     }
                 }
@@ -415,7 +403,7 @@ class MonthView : View {
     /**
      * 创建日历控件数据
      */
-    private fun createCalendarData(dayBean: DayBean, circleBitmapBean: CircleBitmapBean, k: Int, i: Int, isCurrentMonthDay: Boolean) {
+    private fun createCalendarData(dayBean: DayBean, circleBitmapBean: CircleBitmapBean, k: Int, i: Int, isCurrentMonthDay: Boolean, textContent: String) {
         addManagerData(k, i, dayBean)
         setMonthDayPaintColor(dayBean.year!!, dayBean.month!!, dayBean.day!!, isCurrentMonthDay, circleBitmapBean)
         circleBitmapBean.content = textContent
@@ -877,50 +865,52 @@ class MonthView : View {
      * 画天
      */
     private fun drawDay(canvas: Canvas?) {
-        //按天买
-        if (DataManger.selectedDateByDay.isNotEmpty() && circleBitmapBeanListByDay.isNotEmpty()) {
-            circleBitmapBeanListByDay.forEach {
-                if (DataManger.selectedDateByDay.contains(it.dayBean)) {
-                    circlePaint.color = it.circlePaintColor!!
-                    drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
-                    drawBitmap(canvas, it.dst!!, it.bitmap)
+        try {
+            //按天买
+            if (DataManger.selectedDateByDay.isNotEmpty() && circleBitmapBeanListByDay.isNotEmpty()) {
+                circleBitmapBeanListByDay.forEach {
+                    if (DataManger.selectedDateByDay.contains(it.dayBean)) {
+                        circlePaint.color = it.circlePaintColor!!
+                        drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
+                        drawBitmap(canvas, it.dst!!, it.bitmap)
+                    }
+                }
+
+            }
+            if (DataManger.selectingDateByDay.isNotEmpty() && circleBitmapBeanListBySelectingDay.isNotEmpty()) {
+                circleBitmapBeanListBySelectingDay.forEach {
+                    if (DataManger.selectingDateByDay.contains(it.dayBean)) {
+                        circlePaint.color = it.circlePaintColor!!
+                        drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
+                        drawBitmap(canvas, it.dst!!, it.bitmap)
+                    }
                 }
             }
+            //画买过的矩形框（按月和按季买）
+            if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && circleBitmapBeanListByMonth.isNotEmpty()) {
+                circleBitmapBeanListByMonth.forEach {
+                    drawSelectedDateByMonthOrSeason(it, canvas)
+                }
 
-        }
-        if (DataManger.selectingDateByDay.isNotEmpty() && circleBitmapBeanListBySelectingDay.isNotEmpty()) {
-            circleBitmapBeanListBySelectingDay.forEach {
-                if (DataManger.selectingDateByDay.contains(it.dayBean)) {
-                    circlePaint.color = it.circlePaintColor!!
-                    drawCircle(canvas, it.circleX!!, it.circleY!!, selectedDateRadius, circlePaint)
-                    drawBitmap(canvas, it.dst!!, it.bitmap)
+            }
+            if (DataManger.selectingDayByMonthOrSeason.isNotEmpty() && circleBitmapBeanListBySelectingMonth.isNotEmpty()) {
+                circleBitmapBeanListBySelectingMonth.forEach {
+                    drawSelectingDateByMonthOrSeason(it, canvas)
                 }
             }
-        }
-        //画买过的矩形框（按月和按季买）
-        if (DataManger.selectedDayByMonthOrSeason.isNotEmpty() && circleBitmapBeanListByMonth.isNotEmpty()) {
-            circleBitmapBeanListByMonth.forEach {
-                drawSelectedDateByMonthOrSeason(it, canvas)
+            circleBitmapBeanDay.forEach {
+                try {
+                    dayPaint.color = it.dayPaintColor?: Color.parseColor("#000000")
+                    dayPaint.typeface = it.dayPaintTypeface?:Typeface.DEFAULT
+                    canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
+                } catch (e: Exception) {
+                    Log.e("MONTH_VIEW", "不知道为什么没有赋值", e)
+                }
+
             }
-
+        } catch (e: Exception) {
+            Log.e("...", "产生了ConcurrentModificationException异常")
         }
-        if (DataManger.selectingDayByMonthOrSeason.isNotEmpty() && circleBitmapBeanListBySelectingMonth.isNotEmpty()) {
-            circleBitmapBeanListBySelectingMonth.forEach {
-                drawSelectingDateByMonthOrSeason(it, canvas)
-            }
-        }
-        circleBitmapBeanDay.forEach {
-            try {
-                dayPaint.color = it.dayPaintColor!!
-                dayPaint.typeface = it.dayPaintTypeface
-                canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
-            } catch (e: Exception) {
-                Log.e("MONTH_VIEW", "不知道为什么没有赋值", e)
-            }
-
-        }
-
-
     }
 
     private fun drawSelectingDateByMonthOrSeason(circleBitmapBean: CircleBitmapBean, canvas: Canvas?) {
@@ -1164,13 +1154,17 @@ class MonthView : View {
         doAsync {
             isRefresh = false
             isEnableTouch = false
+            circleBitmapBeanListByDay.clear()
+            circleBitmapBeanDay.clear()
+            circleBitmapBeanListBySelectingDay.clear()
+            circleBitmapBeanListByMonth.clear()
+            circleBitmapBeanListBySelectingMonth.clear()
             createDrawWeekData()
             createMonthContentData()
             uiThread {
                 isRefresh = true
                 isEnableTouch = true
                 invalidate()
-                postDelayed({requestLayout()},200)
             }
         }
     }
