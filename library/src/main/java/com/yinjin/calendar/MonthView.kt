@@ -900,8 +900,8 @@ class MonthView : View {
             }
             circleBitmapBeanDay.forEach {
                 try {
-                    dayPaint.color = it.dayPaintColor?: Color.parseColor("#000000")
-                    dayPaint.typeface = it.dayPaintTypeface?:Typeface.DEFAULT
+                    dayPaint.color = it.dayPaintColor ?: Color.parseColor("#000000")
+                    dayPaint.typeface = it.dayPaintTypeface ?: Typeface.DEFAULT
                     canvas?.drawText(it.content, it.textX!!, it.textY!!, dayPaint)
                 } catch (e: Exception) {
                     Log.e("MONTH_VIEW", "不知道为什么没有赋值", e)
@@ -1115,7 +1115,17 @@ class MonthView : View {
         dayState = when {
             year > currentYear -> DayState.ENABLE
             year == currentYear -> when {
-                month > currentMonth -> DayState.ENABLE
+                month > currentMonth ->{
+                    if (month - currentMonth == 1) {
+                        if (day >= limitDay - (CalendarUtil.getDaysInMonth(currentYear, currentMonth) - currentDay)) {
+                            DayState.ENABLE
+                        } else {
+                            DayState.NOT_ENABLE
+                        }
+                    } else {
+                        DayState.ENABLE
+                    }
+                }
                 month == currentMonth -> when {
                     day > currentDay + limitDay -> DayState.ENABLE
                     day == currentDay -> DayState.CURRENT
@@ -1203,7 +1213,17 @@ class MonthView : View {
                                 val dayBeanState = when {
                                     dayBean.year!! > currentYear -> DayState.ENABLE
                                     dayBean.year!! == currentYear -> when {
-                                        dayBean.month!! > currentMonth -> DayState.ENABLE
+                                        dayBean.month!! > currentMonth -> {
+                                            if (dayBean.month!! - currentMonth == 1) {
+                                                if (dayBean.day!! >= limitDay - (CalendarUtil.getDaysInMonth(currentYear, currentMonth) - currentDay)) {
+                                                    DayState.ENABLE
+                                                } else {
+                                                    DayState.NOT_ENABLE
+                                                }
+                                            } else {
+                                                DayState.ENABLE
+                                            }
+                                        }
                                         dayBean.month!! == currentMonth -> when {
                                             dayBean.day!! > currentDay + limitDay -> DayState.ENABLE
                                             dayBean.day!! == currentDay -> DayState.CURRENT
@@ -1216,6 +1236,8 @@ class MonthView : View {
                                 //日期不可点击
                                 if (dayBeanState != DayState.ENABLE) {
                                     isClick = false
+                                    monthViewClick?.noUnClick(dayBean, DataManger.useBuyType, "不能购买该日期的洗车券")
+                                    return@forEach
                                 }
                                 //根据不同的type做相应的逻辑
                                 when (DataManger.useBuyType) {
@@ -1310,6 +1332,7 @@ data class CircleBitmapBean(var dayPaintColor: Int? = Color.parseColor("#000000"
 interface MonthViewClick {
     fun click(dayBean: DayBean, buyType: BuyType, position: Int)
     fun unClick(dayBean: DayBean, buyType: BuyType, message: String)
+    fun noUnClick(dayBean: DayBean, buyType: BuyType, message: String)
 }
 
 
