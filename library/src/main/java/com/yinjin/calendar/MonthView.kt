@@ -1106,10 +1106,10 @@ class MonthView : View {
         //通过选择类型来获取选择时间的显示
         val limitDay = when (DataManger.useBuyType) {
             BuyType.DAY -> {
-                2
+                4
             }
             BuyType.MONTH, BuyType.SEASON -> {
-                8
+                10
             }
         }
         dayState = when {
@@ -1204,10 +1204,10 @@ class MonthView : View {
                                 //通过选择类型来获取选择时间的显示
                                 val limitDay = when (DataManger.useBuyType) {
                                     BuyType.DAY -> {
-                                        2
+                                        4
                                     }
                                     BuyType.MONTH, BuyType.SEASON -> {
-                                        8
+                                        10
                                     }
                                 }
                                 val dayBeanState = when {
