@@ -1237,7 +1237,12 @@ class MonthView : View {
                                                     else -> DayState.NOT_ENABLE
                                                 }
                                             }
-                                            false -> DayState.NOT_ENABLE
+                                            false -> {
+                                                DayState.NOT_ENABLE
+                                                isClick = false
+                                                monthViewClick?.exceedClick(dayBean, DataManger.useBuyType, "所选日期的起始日不能超过90天")
+                                                return@forEach
+                                            }
                                         }
 
 
@@ -1341,6 +1346,7 @@ interface MonthViewClick {
     fun click(dayBean: DayBean, buyType: BuyType, position: Int)
     fun unClick(dayBean: DayBean, buyType: BuyType, message: String)
     fun noUnClick(dayBean: DayBean, buyType: BuyType, message: String)
+    fun exceedClick(dayBean: DayBean, buyType: BuyType, message: String)
 }
 
 

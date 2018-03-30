@@ -26,6 +26,10 @@ class MainActivity : AppCompatActivity() {
             id = 0
             layoutParams = ViewGroup.LayoutParams(month_route_view_pager.width, ViewGroup.LayoutParams.MATCH_PARENT)
             monthViewClick = object : MonthViewClick {
+                override fun exceedClick(dayBean: DayBean, buyType: BuyType, message: String) {
+                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                }
+
                 override fun noUnClick(dayBean: DayBean, buyType: BuyType, message: String) {
                     Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                 }
@@ -79,6 +83,10 @@ class MainActivity : AppCompatActivity() {
                     view.id = position
                     view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                     view.monthViewClick = object : MonthViewClick {
+                        override fun exceedClick(dayBean: DayBean, buyType: BuyType, message: String) {
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                        }
+
                         override fun noUnClick(dayBean: DayBean, buyType: BuyType, message: String) {
                             Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                         }
