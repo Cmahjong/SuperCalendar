@@ -165,5 +165,18 @@ object DateUtil {
         return true
     }
 
+    /**
+     *是否可以选择
+     * @param dayBean 按月买起始日期
+     */
+    fun isCanSelect(currentDayBean: DayBean, clickBuyDayBean: DayBean): Boolean {
+        val clickDateTime = dayBean2Date(clickBuyDayBean)!!.time
+        var endTime = dayBean2Date(currentDayBean)!!.time + 90 * 24 * 60 * 60 * 1000L
+        if (clickDateTime > endTime) {
+            return false
+        }
+        return true
+    }
+
     private fun dayBean2Date(dayBean: DayBean) = str2Date(dayBean.year.toString() + "-" + dayBean.month.toString() + "-" + dayBean.day.toString())
 }

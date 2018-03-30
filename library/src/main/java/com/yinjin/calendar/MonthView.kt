@@ -1115,7 +1115,7 @@ class MonthView : View {
         dayState = when {
             year > currentYear -> DayState.ENABLE
             year == currentYear -> when {
-                month > currentMonth ->{
+                month > currentMonth -> {
                     if (month - currentMonth == 1) {
                         if (day >= limitDay - (CalendarUtil.getDaysInMonth(currentYear, currentMonth) - currentDay)) {
                             DayState.ENABLE
@@ -1210,29 +1210,37 @@ class MonthView : View {
                                         10
                                     }
                                 }
-                                val dayBeanState = when {
-                                    dayBean.year!! > currentYear -> DayState.ENABLE
-                                    dayBean.year!! == currentYear -> when {
-                                        dayBean.month!! > currentMonth -> {
-                                            if (dayBean.month!! - currentMonth == 1) {
-                                                if (dayBean.day!! >= limitDay - (CalendarUtil.getDaysInMonth(currentYear, currentMonth) - currentDay)) {
-                                                    DayState.ENABLE
-                                                } else {
-                                                    DayState.NOT_ENABLE
+                                val dayBeanState =
+                                        when (DateUtil.isCanSelect(currentDayBean!!, dayBean)) {
+                                            true -> {
+                                                when {
+                                                    dayBean.year!! > currentYear -> DayState.ENABLE
+                                                    dayBean.year!! == currentYear -> when {
+                                                        dayBean.month!! > currentMonth -> {
+                                                            if (dayBean.month!! - currentMonth == 1) {
+                                                                if (dayBean.day!! >= limitDay - (CalendarUtil.getDaysInMonth(currentYear, currentMonth) - currentDay)) {
+                                                                    DayState.ENABLE
+                                                                } else {
+                                                                    DayState.NOT_ENABLE
+                                                                }
+                                                            } else {
+                                                                DayState.ENABLE
+                                                            }
+                                                        }
+                                                        dayBean.month!! == currentMonth -> when {
+                                                            dayBean.day!! > currentDay + limitDay -> DayState.ENABLE
+                                                            dayBean.day!! == currentDay -> DayState.CURRENT
+                                                            else -> DayState.NOT_ENABLE
+                                                        }
+                                                        else -> DayState.NOT_ENABLE
+                                                    }
+                                                    else -> DayState.NOT_ENABLE
                                                 }
-                                            } else {
-                                                DayState.ENABLE
                                             }
+                                            false -> DayState.NOT_ENABLE
                                         }
-                                        dayBean.month!! == currentMonth -> when {
-                                            dayBean.day!! > currentDay + limitDay -> DayState.ENABLE
-                                            dayBean.day!! == currentDay -> DayState.CURRENT
-                                            else -> DayState.NOT_ENABLE
-                                        }
-                                        else -> DayState.NOT_ENABLE
-                                    }
-                                    else -> DayState.NOT_ENABLE
-                                }
+
+
                                 //日期不可点击
                                 if (dayBeanState != DayState.ENABLE) {
                                     isClick = false
