@@ -1207,7 +1207,7 @@ class MonthView : View {
                                         3
                                     }
                                     BuyType.MONTH, BuyType.SEASON -> {
-                                        3
+                                        9
                                     }
                                 }
                                 val dayBeanState =
